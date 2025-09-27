@@ -86,3 +86,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Microsoft Adaptive Cards](https://adaptivecards.io/) for the amazing framework
 - [neurodance/adaptivecards](https://github.com/neurodance/adaptivecards) for the forked implementation
 - OpenAI for providing the GPT API that powers the card generation
+# Deployed to jframe.ai via Cloudflare Pages
