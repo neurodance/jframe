@@ -1,0 +1,48 @@
+/* Minimal Adaptive Cards fallback CSS */
+.ac-adaptiveCard {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    font-family: inherit;
+}
+
+.ac-textBlock {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.ac-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.ac-columnSet {
+    display: flex;
+    gap: 1rem;
+}
+
+.ac-column {
+    flex: 1;
+}
+
+.ac-factSet {
+    margin: 1rem 0;
+}
+
+.ac-fact {
+    display: flex;
+    margin-bottom: 0.25rem;
+}
+
+.ac-fact-title {
+    font-weight: bold;
+    margin-right: 0.5rem;
+    min-width: 100px;
+}
+
+.ac-container {
+    margin: 0.5rem 0;
+}
