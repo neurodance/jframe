@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jottr Privacy Assessment - First Contact Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        /* First Contact Card */
+        .first-contact {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* The Question */
+        .question-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .question {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Response Options */
+        .response-options {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .response-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .response-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .response-btn.primary {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        /* Voice Input */
+        .voice-input {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .voice-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .voice-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .voice-btn.listening {
+            background: #ff4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+
+        /* Privacy Info Section */
+        .privacy-info {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .info-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Links Section */
+        .links-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .links-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .privacy-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .privacy-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Jott Display Area */
+        #jottDisplay {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .jott-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .jott-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .jott-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .share-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .share-btn:hover {
+            background: #e0e0e0;
+            transform: translateY(-1px);
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f0f0f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Revenue Opportunities */
+        .revenue-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+        }
+
+        .revenue-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="first-contact" id="firstContact">
+            <div class="logo">🔍</div>
+            <h1 class="title">Welcome to Jottr</h1>
+            <p class="subtitle">Ethical AI that respects your privacy while showing you insights</p>
+
+            <div class="question-box">
+                <div class="question">
+                    Want to know what I can tell about you right now?
+                </div>
+                <div class="response-options">
+                    <button class="response-btn primary" onclick="runAssessment()">
+                        Yes, show me
+                    </button>
+                    <button class="response-btn" onclick="runAssessment()">
+                        OK
+                    </button>
+                    <button class="response-btn" onclick="runAssessment()">
+                        Sure
+                    </button>
+                    <button class="response-btn" onclick="showPrivacyInfo()">
+                        Tell me more first
+                    </button>
+                </div>
+                <div class="voice-input">
+                    <button class="voice-btn" id="voiceBtn" onclick="startVoiceInput()">
+                        🎤 Or just say "yes"
+                    </button>
+                </div>
+            </div>
+
+            <div class="privacy-info">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">🔒</div>
+                        <div class="info-title">No Data Stored</div>
+                        <div class="info-desc">Everything is analyzed locally and deleted immediately</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">🎯</div>
+                        <div class="info-title">Educational Purpose</div>
+                        <div class="info-desc">Learn about your digital footprint safely</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">✨</div>
+                        <div class="info-title">Instant Insights</div>
+                        <div class="info-desc">Get a shareable privacy assessment Jott</div>
+                    </div>
+                </div>
+
+                <div class="links-section">
+                    <h3 class="links-title">Learn More About Privacy & Jottr's Mission</h3>
+                    <div class="link-grid">
+                        <a href="https://jottr.io/mission" class="privacy-link">
+                            <span>🛡️</span>
+                            <span>Our Ethical AI Mission</span>
+                        </a>
+                        <a href="https://jottr.io/privacy-guide" class="privacy-link">
+                            <span>📚</span>
+                            <span>Privacy Protection Guide</span>
+                        </a>
+                        <a href="https://jottr.io/digital-footprint" class="privacy-link">
+                            <span>👣</span>
+                            <span>Understanding Your Digital Footprint</span>
+                        </a>
+                        <a href="https://jottr.io/privacy-tools" class="privacy-link">
+                            <span>🔧</span>
+                            <span>Privacy Tools & Services</span>
+                            <span class="revenue-badge">Partner</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="revenue-section">
+                    <h3 class="links-title">Protect Your Privacy</h3>
+                    <div class="link-grid">
+                        <a href="https://jottr.io/vpn-recommendation" class="privacy-link">
+                            <span>🌐</span>
+                            <span>Recommended VPN Services</span>
+                            <span class="revenue-badge">Affiliate</span>
+                        </a>
+                        <a href="https://jottr.io/password-managers" class="privacy-link">
+                            <span>🔑</span>
+                            <span>Password Manager Guide</span>
+                            <span class="revenue-badge">Affiliate</span>
+                        </a>
+                        <a href="https://jottr.io/privacy-monitoring" class="privacy-link">
+                            <span>📊</span>
+                            <span>Privacy Monitoring Service</span>
+                            <span class="revenue-badge">Premium</span>
+                        </a>
+                        <a href="https://jottr.io/consultation" class="privacy-link">
+                            <span>💼</span>
+                            <span>Personal Privacy Consultation</span>
+                            <span class="revenue-badge">Service</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing your digital footprint...</p>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">This is 100% private - no data is stored</p>
+        </div>
+
+        <!-- Jott Display Area -->
+        <div id="jottDisplay"></div>
+    </div>
+
+    <!-- Include Adaptive Cards library -->
+    <script src="https://unpkg.com/adaptivecards@latest/dist/adaptivecards.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/adaptivecards@latest/dist/css/adaptivecards.css">
+
+    <script type="module">
+        import PrivacyAssessment from './src/privacy/privacy-assessment.js';
+
+        // Make functions available globally
+        window.runAssessment = async function() {
+            // Hide first contact, show loading
+            document.getElementById('firstContact').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Create assessment
+            const assessment = new PrivacyAssessment();
+
+            // Simulate processing time for effect
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate the Jott
+            const jott = await assessment.createPrivacyJott();
+
+            // Hide loading, show results
+            document.getElementById('loading').style.display = 'none';
+            displayJott(jott);
+
+            // Clear assessment data immediately
+            assessment.clearAssessment();
+        };
+
+        window.showPrivacyInfo = function() {
+            // Scroll to privacy info
+            document.querySelector('.privacy-info').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.startVoiceInput = function() {
+            const btn = document.getElementById('voiceBtn');
+
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                alert('Voice input not supported in this browser');
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            btn.classList.add('listening');
+            btn.textContent = '🎤 Listening...';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+
+                // Check for affirmative responses
+                const affirmatives = ['yes', 'yeah', 'sure', 'ok', 'okay', 'show me', 'go ahead', 'do it'];
+
+                if (affirmatives.some(word => transcript.includes(word))) {
+                    runAssessment();
+                } else {
+                    btn.textContent = '🎤 Say "yes" or click a button';
+                }
+            };
+
+            recognition.onerror = function() {
+                btn.classList.remove('listening');
+                btn.textContent = '🎤 Or just say "yes"';
+            };
+
+            recognition.onend = function() {
+                btn.classList.remove('listening');
+                btn.textContent = '🎤 Or just say "yes"';
+            };
+
+            recognition.start();
+        };
+
+        function displayJott(jottData) {
+            const container = document.getElementById('jottDisplay');
+            container.style.display = 'block';
+
+            // Create the header with share buttons
+            const header = `
+                <div class="jott-container">
+                    <div class="jott-header">
+                        <div class="jott-title">📊 Your Privacy Assessment Jott</div>
+                        <div class="share-buttons">
+                            <button class="share-btn" onclick="copyJott()">📋 Copy</button>
+                            <button class="share-btn" onclick="shareEmail()">📧 Email</button>
+                            <button class="share-btn" onclick="shareTwitter()">🐦 Tweet</button>
+                            <button class="share-btn" onclick="downloadJott()">💾 Download</button>
+                        </div>
+                    </div>
+                    <div id="adaptiveCard"></div>
+                </div>
+            `;
+            container.innerHTML = header;
+
+            // Render the Adaptive Card
+            const adaptiveCard = new AdaptiveCards.AdaptiveCard();
+            adaptiveCard.hostConfig = new AdaptiveCards.HostConfig({
+                fontFamily: "-apple-system, system-ui, sans-serif",
+                supportsInteractivity: true,
+                showActionCard: "true"
+            });
+
+            adaptiveCard.parse(jottData);
+            const renderedCard = adaptiveCard.render();
+            document.getElementById('adaptiveCard').appendChild(renderedCard);
+
+            // Store Jott data for sharing
+            window.currentJott = jottData;
+
+            // Scroll to results
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Share functions
+        window.copyJott = function() {
+            const text = window.currentJott.metadata.shareText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard! Ready to share.');
+            });
+        };
+
+        window.shareEmail = function() {
+            const subject = encodeURIComponent('My Digital Footprint Assessment');
+            const body = encodeURIComponent(window.currentJott.metadata.shareText);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        };
+
+        window.shareTwitter = function() {
+            const text = encodeURIComponent(window.currentJott.metadata.shareText);
+            window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+        };
+
+        window.downloadJott = function() {
+            const dataStr = JSON.stringify(window.currentJott, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = 'privacy-assessment-jott.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        };
+    </script>
+</body>
+</html>
