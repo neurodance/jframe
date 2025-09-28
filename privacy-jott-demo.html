@@ -71,9 +71,9 @@
         .question-box {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 15px;
-            margin: 20px 0;
+            margin: 30px 0;
             position: relative;
             overflow: hidden;
         }
@@ -116,9 +116,9 @@
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1rem;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.2rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -127,14 +127,21 @@
 
         .response-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         .response-btn.primary {
             background: white;
             color: #667eea;
             border-color: white;
+            font-size: 1.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        .response-btn.primary:hover {
+            background: rgba(255, 255, 255, 0.95);
+            transform: scale(1.05);
         }
 
         /* Voice Input */
@@ -340,26 +347,9 @@
             <p class="subtitle">Ethical AI that respects your privacy while showing you insights</p>
 
             <div class="question-box">
-                <div class="question">
-                    Want to know what I can tell about you right now?
-                </div>
                 <div class="response-options">
                     <button class="response-btn primary" onclick="runAssessment()">
-                        Yes, show me
-                    </button>
-                    <button class="response-btn" onclick="runAssessment()">
-                        OK
-                    </button>
-                    <button class="response-btn" onclick="runAssessment()">
-                        Sure
-                    </button>
-                    <button class="response-btn" onclick="showPrivacyInfo()">
-                        Tell me more first
-                    </button>
-                </div>
-                <div class="voice-input">
-                    <button class="voice-btn" id="voiceBtn" onclick="startVoiceInput()">
-                        🎤 Or just say "yes"
+                        What I know about you
                     </button>
                 </div>
             </div>
