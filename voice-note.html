@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jott Voice Notes - The ONE Feature</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .voice-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .voice-button.listening {
+            animation: pulse 1.5s infinite;
+            background: #ff4444;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,68,68,0.7); }
+            70% { box-shadow: 0 0 0 30px rgba(255,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,68,68,0); }
+        }
+
+        .voice-button svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .listening .voice-button svg {
+            fill: white;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 30px;
+            font-size: 18px;
+        }
+
+        .notes-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .note {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .note-text {
+            margin-bottom: 5px;
+        }
+
+        .note-time {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .instructions {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .clear-button {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .clear-button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .voice-button {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jott Notes</h1>
+        <p class="subtitle">Say "Jott note" followed by your note</p>
+
+        <button class="voice-button" id="voiceButton" aria-label="Start voice recording">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 15c1.66 0 3-1.34 3-3V6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 15 12 15s-4.52-.8-4.93-2.15c-.08-.49-.49-.85-.98-.85-.61 0-1.09.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-1.08c3.02-.43 5.42-2.78 5.91-5.78.1-.6-.39-1.14-1-1.14z"/>
+            </svg>
+        </button>
+
+        <div class="status" id="status">Click or press spacebar to start</div>
+
+        <div class="notes-container" id="notesContainer">
+            <!-- Notes will appear here -->
+        </div>
+
+        <center>
+            <button class="clear-button" id="clearButton" style="display:none">Clear All Notes</button>
+        </center>
+
+        <p class="instructions">
+            💡 Tips: Say "Jott note" clearly, then your note.<br>
+            Example: "Jott note buy milk and eggs"
+        </p>
+    </div>
+
+    <script>
+        // Simple, working voice notes - ONE FEATURE done perfectly
+        class VoiceNotes {
+            constructor() {
+                this.button = document.getElementById('voiceButton');
+                this.status = document.getElementById('status');
+                this.container = document.getElementById('notesContainer');
+                this.clearButton = document.getElementById('clearButton');
+
+                this.isListening = false;
+                this.recognition = null;
+
+                this.init();
+                this.loadNotes();
+            }
+
+            init() {
+                // Check browser support
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    this.status.textContent = 'Voice input not supported in this browser';
+                    this.button.disabled = true;
+                    return;
+                }
+
+                // Setup speech recognition
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                this.recognition.continuous = true;  // Keep listening!
+                this.recognition.interimResults = true;
+                this.recognition.lang = 'en-US';
+                this.recognition.maxAlternatives = 3;
+
+                // Track if we've heard the trigger
+                this.heardTrigger = false;
+                this.noteContent = '';
+
+                // Button click
+                this.button.addEventListener('click', () => this.toggleListening());
+
+                // Spacebar shortcut - TOGGLE not hold
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && e.target === document.body) {
+                        e.preventDefault();
+                        this.toggleListening();
+                    }
+                });
+
+                // Clear button
+                this.clearButton.addEventListener('click', () => this.clearNotes());
+
+                // Speech recognition events
+                this.recognition.onstart = () => {
+                    this.isListening = true;
+                    this.button.classList.add('listening');
+                    this.status.textContent = 'Listening... say "Jott note..."';
+                    // Reset state for new session
+                    this.heardTrigger = false;
+                    this.noteContent = '';
+                };
+
+                this.recognition.onend = () => {
+                    this.isListening = false;
+                    this.button.classList.remove('listening');
+                    this.status.textContent = 'Click or press spacebar to start';
+                    // Reset state
+                    this.heardTrigger = false;
+                    this.noteContent = '';
+                };
+
+                this.recognition.onerror = (event) => {
+                    this.status.textContent = 'Error: ' + event.error;
+                    setTimeout(() => {
+                        this.status.textContent = 'Click or press spacebar to start';
+                    }, 3000);
+                };
+
+                this.recognition.onresult = (event) => {
+                    // Process all new results since last event
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        const result = event.results[i];
+                        const transcript = result[0].transcript.toLowerCase();
+                        const isFinal = result.isFinal;
+
+                        if (!this.heardTrigger) {
+                            // Looking for trigger phrase
+                            if (transcript.includes('jott note') || transcript.includes('jot note')) {
+                                this.heardTrigger = true;
+                                this.status.textContent = '📝 Listening for your note...';
+
+                                // Extract any content after the trigger
+                                const triggers = ['jott note', 'jot note'];
+                                for (const trigger of triggers) {
+                                    const index = transcript.indexOf(trigger);
+                                    if (index !== -1) {
+                                        const afterTrigger = transcript.substring(index + trigger.length).trim();
+                                        if (afterTrigger) {
+                                            this.noteContent = afterTrigger;
+                                        }
+                                        break;
+                                    }
+                                }
+                            } else if (!isFinal) {
+                                this.status.textContent = `Say "Jott note" to start...`;
+                            }
+                        } else {
+                            // We've heard the trigger, now capture the note
+                            if (isFinal) {
+                                // Add to accumulated content
+                                if (this.noteContent) {
+                                    this.noteContent += ' ' + transcript;
+                                } else {
+                                    this.noteContent = transcript;
+                                }
+
+                                // Save after a brief pause
+                                clearTimeout(this.saveTimeout);
+                                this.saveTimeout = setTimeout(() => {
+                                    if (this.noteContent.trim()) {
+                                        this.saveNote(this.noteContent.trim());
+                                        this.stopListening();
+                                    }
+                                }, 1500); // Wait 1.5 seconds of silence before saving
+                            } else {
+                                // Show what we're hearing
+                                const preview = this.noteContent ?
+                                    this.noteContent + ' ' + transcript :
+                                    transcript;
+                                this.status.textContent = `📝 "${preview}"`;
+                            }
+                        }
+                    }
+                };
+            }
+
+
+            saveNote(text) {
+                const note = {
+                    id: Date.now(),
+                    text: text,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Get existing notes
+                const notes = this.getNotes();
+                notes.unshift(note); // Add to beginning
+
+                // Save to localStorage
+                localStorage.setItem('jott_notes', JSON.stringify(notes));
+
+                // Display immediately
+                this.displayNote(note, true);
+
+                // Show clear button
+                this.clearButton.style.display = 'inline-block';
+
+                // Show success message
+                this.status.textContent = `✅ Saved: "${text}"`;
+
+                // Reset state
+                this.heardTrigger = false;
+                this.noteContent = '';
+            }
+
+            getNotes() {
+                const stored = localStorage.getItem('jott_notes');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            loadNotes() {
+                const notes = this.getNotes();
+
+                if (notes.length === 0) {
+                    this.container.innerHTML = '<p style="text-align:center; opacity:0.7">No notes yet. Start speaking!</p>';
+                    this.clearButton.style.display = 'none';
+                } else {
+                    this.container.innerHTML = '';
+                    notes.forEach(note => this.displayNote(note, false));
+                    this.clearButton.style.display = 'inline-block';
+                }
+            }
+
+            displayNote(note, isNew) {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'note';
+                if (isNew) noteEl.style.animation = 'slideIn 0.3s ease';
+
+                const time = new Date(note.timestamp).toLocaleString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+                noteEl.innerHTML = `
+                    <div class="note-text">${this.escapeHtml(note.text)}</div>
+                    <div class="note-time">${time}</div>
+                `;
+
+                if (isNew && this.container.firstChild) {
+                    this.container.insertBefore(noteEl, this.container.firstChild);
+                    // Remove "no notes" message if it exists
+                    const noNotes = this.container.querySelector('p');
+                    if (noNotes) noNotes.remove();
+                } else {
+                    this.container.appendChild(noteEl);
+                }
+            }
+
+            clearNotes() {
+                if (confirm('Clear all notes?')) {
+                    localStorage.removeItem('jott_notes');
+                    this.loadNotes();
+                    this.status.textContent = 'All notes cleared';
+                }
+            }
+
+            toggleListening() {
+                if (this.isListening) {
+                    this.stopListening();
+                } else {
+                    this.startListening();
+                }
+            }
+
+            startListening() {
+                if (!this.isListening && this.recognition) {
+                    this.recognition.start();
+                }
+            }
+
+            stopListening() {
+                if (this.isListening && this.recognition) {
+                    this.recognition.stop();
+                }
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // Start the app
+        new VoiceNotes();
+    </script>
+</body>
+</html>

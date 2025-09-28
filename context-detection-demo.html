@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jott Context Detection - UAT Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            font-size: 1.2rem;
+        }
+
+        .holy-shit-moment {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: #333;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .greeting {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #764ba2;
+        }
+
+        .insight {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .location-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .location-card h4 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .location-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .location-item {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .insight h3 {
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+
+        .suggestions {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .suggestion {
+            background: rgba(103, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion:hover {
+            background: rgba(103, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+
+        .context-details {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .context-details h3 {
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .context-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .context-item {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .context-item .label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .context-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .confidence-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: #4caf50;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .debug-toggle {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .debug-toggle button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .debug-toggle button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .raw-data {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            display: none;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .raw-data.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .greeting { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Jott Mind-Reading Demo</h1>
+        <p class="subtitle">Watch as we detect your context without any input!</p>
+
+        <div class="holy-shit-moment" id="magicMoment">
+            <div class="greeting" id="greeting">Loading...</div>
+
+            <div class="insight">
+                <h3>✨ Here's what I detected about you:</h3>
+                <div id="insights"></div>
+            </div>
+
+            <div class="suggestions">
+                <h3 style="color: #764ba2; margin-bottom: 10px;">Suggested Jotts for you right now:</h3>
+                <div id="suggestions"></div>
+            </div>
+        </div>
+
+        <div class="context-details">
+            <h3>📊 Detected Context</h3>
+            <div class="context-grid" id="contextGrid">
+                <!-- Context items will be added here -->
+            </div>
+
+            <div class="confidence-bar">
+                <div class="confidence-fill" id="confidenceBar"></div>
+            </div>
+            <p style="margin-top: 5px; opacity: 0.8; font-size: 0.9rem;">
+                Confidence: <span id="confidenceText">0%</span>
+            </p>
+        </div>
+
+        <div class="debug-toggle">
+            <button onclick="toggleDebug()">Show Raw Data</button>
+        </div>
+
+        <pre class="raw-data" id="rawData"></pre>
+    </div>
+
+    <script type="module">
+        import ColdStartContext from './src/context/cold-start-context.js';
+
+        // Initialize context detection
+        const detector = new ColdStartContext();
+
+        // Display the "holy shit" moment
+        async function displayMagicMoment() {
+            // Show loading state
+            document.getElementById('greeting').textContent = 'Detecting your context... 🔍';
+
+            // Detect context (now async because of location)
+            const context = await detector.detect();
+
+            // Personalized greeting
+            const greeting = detector.getContextualGreeting();
+            document.getElementById('greeting').textContent = `${greeting}! 👋`;
+
+            // Generate insights
+            const insights = await generateInsights(context);
+            document.getElementById('insights').innerHTML = insights;
+
+            // Generate suggestions
+            const suggestions = await detector.getContextualSuggestions();
+            displaySuggestions(suggestions);
+
+            // Display context details
+            displayContextGrid(context);
+
+            // Show confidence
+            const confidence = Math.round(context.confidence.overall * 100);
+            document.getElementById('confidenceBar').style.width = `${confidence}%`;
+            document.getElementById('confidenceText').textContent = `${confidence}%`;
+
+            // Store raw data for debug view
+            document.getElementById('rawData').textContent = JSON.stringify(context, null, 2);
+        }
+
+        async function generateInsights(context) {
+            const insights = [];
+            const { temporal, environmental, location } = context;
+
+            // Time-based insight
+            if (temporal.timeOfDay === 'morning') {
+                insights.push(`☕ I see it's morning - perfect time for planning your day`);
+            } else if (temporal.timeOfDay === 'afternoon') {
+                insights.push(`☀️ Afternoon productivity time`);
+            } else if (temporal.timeOfDay === 'evening') {
+                insights.push(`🌅 Evening - time to wind down and reflect`);
+            } else {
+                insights.push(`🌙 Late night session - burning the midnight oil?`);
+            }
+
+            // Weekend insight
+            if (temporal.isWeekend) {
+                insights.push(`🎉 It's the weekend! Time for personal projects`);
+            } else if (temporal.dayOfWeek === 'Monday') {
+                insights.push(`💪 Monday motivation - let's tackle the week`);
+            } else if (temporal.dayOfWeek === 'Friday') {
+                insights.push(`🎯 Friday focus - wrapping up the week`);
+            }
+
+            // Enhanced location insights
+            let locationHTML = '';
+            if (location.city && location.country) {
+                insights.push(`📍 You're in ${location.city}, ${location.country}`);
+
+                // Add detailed location card
+                locationHTML = `
+                    <div class="location-card">
+                        <h4>🌍 Location Context</h4>
+                        <div class="location-details">
+                            ${location.city ? `<div class="location-item">🏙️ City: ${location.city}</div>` : ''}
+                            ${location.region ? `<div class="location-item">📍 Region: ${location.region}</div>` : ''}
+                            ${location.country ? `<div class="location-item">🌐 Country: ${location.country}</div>` : ''}
+                            ${location.postal ? `<div class="location-item">📮 Postal: ${location.postal}</div>` : ''}
+                            ${location.ip ? `<div class="location-item">🔌 IP: ${location.ip}</div>` : ''}
+                            ${location.latitude ? `<div class="location-item">📏 Coords: ${location.latitude.toFixed(2)}°, ${location.longitude.toFixed(2)}°</div>` : ''}
+                        </div>
+                        <div style="margin-top: 10px; font-size: 0.85rem; opacity: 0.7;">
+                            Source: ${location.source === 'ip' ? 'IP-based location' : location.source === 'gps' ? 'GPS location' : 'Timezone only'}
+                        </div>
+                    </div>
+                `;
+
+                // Travel detection
+                if (location.timezone !== temporal.timezone && location.timezone) {
+                    insights.push(`✈️ Looks like you might be traveling! Browser timezone differs from IP location`);
+                }
+            } else if (location.timezone) {
+                insights.push(`📍 You're in ${location.timezone.replace(/_/g, ' ')}`);
+            }
+
+            // Device insight
+            if (environmental.deviceType === 'mobile') {
+                insights.push(`📱 On mobile - quick capture mode`);
+            } else if (environmental.deviceType === 'desktop') {
+                insights.push(`💻 Desktop power user - full productivity mode`);
+            }
+
+            // Dark mode insight
+            if (environmental.prefersDarkMode) {
+                insights.push(`🌚 Dark mode detected - easy on the eyes`);
+            }
+
+            // Online/offline status
+            if (environmental.online === false) {
+                insights.push(`📴 Currently offline - local mode active`);
+            }
+
+            return insights.map(i => `<p style="margin: 8px 0;">${i}</p>`).join('') + locationHTML;
+        }
+
+        function displaySuggestions(suggestions) {
+            const container = document.getElementById('suggestions');
+
+            if (suggestions.length === 0) {
+                container.innerHTML = '<p style="opacity: 0.7;">No specific suggestions at this time</p>';
+                return;
+            }
+
+            container.innerHTML = suggestions.map(s => `
+                <div class="suggestion">
+                    <strong>${s.icon || '💡'} ${s.text}</strong>
+                    <div style="font-size: 0.9rem; opacity: 0.8; margin-top: 5px;">
+                        Type: ${s.type} • Confidence: ${Math.round(s.confidence * 100)}%
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function displayContextGrid(context) {
+            const grid = document.getElementById('contextGrid');
+            const { temporal, environmental, location } = context;
+
+            const items = [
+                { label: 'Current Time', value: temporal.currentTime.toLocaleTimeString() },
+                { label: 'Time of Day', value: temporal.timeOfDay },
+                { label: 'Day', value: temporal.dayOfWeek },
+                { label: 'Timezone', value: temporal.timezone },
+                { label: 'Language', value: environmental.language },
+                { label: 'Device', value: environmental.deviceType },
+                { label: 'Platform', value: environmental.platform },
+                { label: 'Dark Mode', value: environmental.prefersDarkMode ? 'Yes' : 'No' },
+                { label: 'Location Source', value: location.source || 'none' }
+            ];
+
+            // Add location items if available
+            if (location.city) {
+                items.push({ label: 'City', value: location.city });
+            }
+            if (location.country) {
+                items.push({ label: 'Country', value: location.country });
+            }
+
+            grid.innerHTML = items.map(item => `
+                <div class="context-item">
+                    <div class="label">${item.label}</div>
+                    <div class="value">${item.value}</div>
+                </div>
+            `).join('');
+        }
+
+        // Debug toggle
+        window.toggleDebug = function() {
+            const rawData = document.getElementById('rawData');
+            rawData.classList.toggle('show');
+        };
+
+        // Run the magic
+        displayMagicMoment();
+
+        // Auto-refresh every second to show time updates
+        setInterval(async () => {
+            const newContext = await detector.detect();
+            const timeItem = document.querySelector('.context-item .value');
+            if (timeItem) {
+                timeItem.textContent = newContext.temporal.currentTime.toLocaleTimeString();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

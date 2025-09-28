@@ -1,0 +1,55 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Check for console.log statements
+echo "Checking for console.log statements..."
+if grep -r "console\.log" --include="*.js" --exclude-dir=node_modules --exclude-dir=tests .; then
+  echo "❌ Error: console.log statements found in production code"
+  echo "Please remove or comment out console.log statements"
+  exit 1
+fi
+
+# Run tests
+echo "Running tests..."
+npm test
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Please fix before committing."
+  exit 1
+fi
+
+# Run linting (when eslint is configured)
+if [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ]; then
+  echo "Running linter..."
+  npm run lint
+  if [ $? -ne 0 ]; then
+    echo "❌ Linting failed. Please fix before committing."
+    exit 1
+  fi
+fi
+
+# Check for large files
+echo "Checking for large files..."
+for file in $(git diff --cached --name-only); do
+  size=$(wc -c < "$file")
+  if [ $size -gt 1000000 ]; then
+    echo "❌ Error: $file is larger than 1MB"
+    echo "Please review large files before committing"
+    exit 1
+  fi
+done
+
+# Check for API keys or secrets
+echo "Checking for potential secrets..."
+if git diff --cached --name-only | xargs grep -E "(api[_-]?key|secret|password|token)" -i; then
+  echo "⚠️ Warning: Potential secrets detected"
+  echo "Please review the changes and ensure no secrets are being committed"
+  read -p "Continue anyway? (y/n) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+fi
+
+echo "✅ All pre-commit checks passed!"

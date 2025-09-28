@@ -1,0 +1,3 @@
+[submodule "jottr-io"]
+	path = jottr-io
+	url = https://github.com/neurodance/jottr-io.git

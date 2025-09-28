@@ -37,6 +37,7 @@
 
             <div class="input-area">
                 <div class="input-container">
+                    <label for="promptInput" class="sr-only">Enter your Jott prompt</label>
                     <input type="text" id="promptInput" placeholder="What's your Jott about? (Try: 'quarterly sales dashboard' or 'team introduction')" maxlength="500">
                     <button id="generateBtn" type="button">Jott It</button>
                 </div>
@@ -44,6 +45,9 @@
                     <small>🚀 Think it. Jott it. Share it. • AI-powered Jotts coming soon!</small>
                 </div>
             </div>
+
+            <!-- Card rendering container -->
+            <div id="cardContainer" class="card-container"></div>
         </main>
 
         <footer>

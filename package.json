@@ -1,0 +1,50 @@
+{
+  "name": "jframe",
+  "version": "0.1.0",
+  "description": "Universal infrastructure for Jott embedding and distribution",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/unit/*.test.js",
+    "test:integration": "node tests/integration/browser-test.js",
+    "test:visual": "node tests/visual/regression-test.js",
+    "test:all": "npm test && npm run test:integration && npm run test:visual",
+    "test:coverage": "c8 npm test",
+    "serve": "npx serve .",
+    "serve:python": "python -m http.server 8000",
+    "lint": "eslint *.js",
+    "format": "prettier --write '**/*.{js,json,md,html,css}'",
+    "pre-commit": "npm test && npm run lint"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/neurodance/jframe.git"
+  },
+  "keywords": [
+    "adaptive-cards",
+    "jott",
+    "embedding",
+    "infrastructure"
+  ],
+  "author": "neurodance",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.44.1",
+    "@typescript-eslint/parser": "^8.44.1",
+    "c8": "^9.0.0",
+    "eslint": "^8.56.0",
+    "husky": "^9.0.0",
+    "prettier": "^3.2.0",
+    "puppeteer": "^22.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "chrome-devtools-mcp": "file:../chrome-devtools-mcp",
+    "jsdom": "^27.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

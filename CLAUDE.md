@@ -4,7 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-JFrame is a client-side web application that generates Adaptive Cards using AI (Claude Code with the anthropic api account "jordan@goldcode.com") or demo mode. It's a static HTML/JavaScript application designed for GitHub Pages deployment with no backend requirements.
+**⚠️ IMPORTANT**: This repository contains TWO distinct but interdependent projects. See [PROJECT-ARCHITECTURE.md](./PROJECT-ARCHITECTURE.md) for detailed architecture and relationships.
+
+### JFrame (This Repository - Infrastructure Layer)
+JFrame is the **embedding and distribution infrastructure** for "Jotts" - a new creative medium. It provides the virtual infrastructure (interfaces, protocols, security, connectors, APIs, logging) that makes Jotts deployable anywhere:
+- Web pages, emails, chat platforms (Teams/Slack/Zoom)
+- Social media (Facebook, Twitter/X, Instagram)
+- Secure enterprise environments
+- Any visual interface or form factor
+
+**Current Implementation**: A client-side web application that generates Adaptive Cards using AI (Claude Code with the anthropic api account "jordan@goldcode.com") or demo mode. Static HTML/JavaScript for GitHub Pages deployment.
+
+### Jottr.io (Subdirectory - Creative Layer)
+Located in `jottr-io/` subdirectory. The **creative platform** for creating and publishing Jotts:
+- Visual studio for Jott creation
+- Publishing platform (similar to Substack model)
+- Built on AdaptiveCards concepts with enhanced interactivity
+- React + TypeScript + Vite with Catalyst UI Kit
+
+**Note**: These projects work together - JFrame makes Jotts deployable everywhere, while Jottr.io is where creators build them.
 
 ## Development Commands
 
@@ -59,9 +77,15 @@ This project is designed for GitHub Pages - simply enable Pages in repository se
 ## User Context & Preferences
 
 ### Background
-- **Strong expertise**: .NET, C#, T-SQL, Windows, Azure, Microsoft ecosystem, PowerShell 7
-- **Learning focus**: Bash shell commands and Git/GitHub CLI
-- **Preferred approach**: Beginner-friendly explanations for bash and git commands
+- **Strong expertise**: .NET, C#, ASP.NET, T-SQL, Windows, Azure, Microsoft ecosystem, PowerShell 7
+- **Currently learning**:
+  - Bash shell commands and Git/GitHub CLI
+  - Next.js and modern React patterns
+  - TypeScript (transitioning from C# background)
+  - Python programming
+  - Modern web deployment (Vercel, Cloudflare, Supabase)
+- **Preferred approach**: Detailed explanations with the "why" behind architectural decisions
+- **Learning style**: Values tutoring and hand-holding for new technologies
 
 ### Assistant Guidelines
 
@@ -79,13 +103,26 @@ When working with this user:
    - Provide context for why certain git practices are recommended
    - Example: Explain "git status shows uncommitted changes" rather than assuming knowledge
 
-3. **Development Approach**:
-   - Leverage user's .NET/C# knowledge when explaining JavaScript concepts
-   - Draw parallels to familiar Microsoft tools when introducing new concepts
-   - Can assume comfort with IDEs, debugging, and general programming concepts
+3. **TypeScript/JavaScript**:
+   - Draw parallels to C# concepts (e.g., "interfaces are like C# interfaces", "async/await works similarly")
+   - Explain differences explicitly (e.g., "unlike C#, TypeScript types are compile-time only")
+   - Compare Next.js patterns to ASP.NET MVC/Razor Pages when relevant
+   - Point out when JavaScript behaves differently than expected from C#
 
-4. **Communication Style**:
+4. **Modern Web Development**:
+   - Explain React hooks by comparing to C# state management patterns
+   - Clarify client vs server components (similar to WebForms code-behind vs JavaScript)
+   - Break down the deployment pipeline step-by-step
+   - Explain why certain architectural choices are made (e.g., "Vercel over Cloudflare because...")
+
+5. **Python Learning**:
+   - Leverage C# knowledge (e.g., "Python lists are like C# List<T>")
+   - Highlight Python's different philosophy (dynamic typing, indentation)
+   - Start with practical examples relevant to web development
+
+6. **Communication Style**:
    - Be educational but not condescending
-   - Provide "learning moments" when using bash or git
-   - Offer tips for remembering common commands
-   - Show both the "what" and the "why" for terminal operations
+   - Provide "learning moments" for new technologies
+   - Always explain the "why" behind decisions
+   - Show both the "what" and the "why" for all operations
+   - Give context about industry best practices

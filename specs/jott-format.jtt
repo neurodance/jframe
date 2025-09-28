@@ -1,0 +1,390 @@
+# Jott Template Format Specification v1.0
+# File extension: .jtt (Jott Template)
+# This is the canonical example and specification
+
+meta:
+  version: "1.0"
+  type: "specification"
+  name: "Jott Format Specification"
+  author: "@neurodance"
+  license: "MIT"
+  created: "2024-11-28"
+  description: |
+    The .jtt format defines reusable, composable agents for the Jott ecosystem.
+    Each .jtt file represents a single agent or template that can be loaded,
+    executed, and composed with other agents.
+
+# Agent definition - what this Jott does
+agent:
+  id: "com.jframe.example"  # Unique identifier (reverse domain notation)
+  name: "Example Agent"
+  description: "Demonstrates the .jtt format capabilities"
+  version: "1.0.0"
+
+  # What this agent can do
+  capabilities:
+    - "text-generation"
+    - "data-processing"
+    - "user-interaction"
+
+  # Required and optional permissions (GDPR/privacy first)
+  permissions:
+    required:
+      - id: "storage:local"
+        reason: "Store user preferences"
+      - id: "network:api"
+        reason: "Call AI services"
+
+    optional:
+      - id: "calendar:read"
+        reason: "Provide context-aware suggestions"
+      - id: "location:coarse"
+        reason: "Timezone-aware scheduling"
+
+# When this agent activates
+triggers:
+  voice:
+    phrases:
+      - "create {type} for {recipient}"
+      - "jott about {topic}"
+      - "{action} my {item}"
+
+    # Voice entities extraction
+    entities:
+      - name: "type"
+        values: ["note", "reminder", "message", "card"]
+      - name: "recipient"
+        type: "person"
+      - name: "topic"
+        type: "free-text"
+      - name: "action"
+        values: ["add to", "update", "check", "review"]
+      - name: "item"
+        type: "free-text"
+
+  context:
+    conditions:
+      - type: "time"
+        value: "end_of_day"
+        action: "suggest_daily_summary"
+
+      - type: "calendar"
+        value: "meeting_in_15_min"
+        action: "prepare_meeting_notes"
+
+      - type: "pattern"
+        value: "weekly_report_due"
+        action: "generate_weekly_report"
+
+  gesture:
+    - type: "shake"
+      action: "quick_capture"
+    - type: "double_tap"
+      action: "voice_input"
+
+# The agent's workflow
+flow:
+  # Step 1: Gather context
+  gather:
+    parallel: true  # Run these in parallel
+    timeout: 5000   # Max 5 seconds
+
+    sources:
+      - id: "recent_context"
+        type: "history"
+        query: "recent_activities(minutes: 30)"
+
+      - id: "user_state"
+        type: "cognitive"
+        query: "get_cognitive_state()"
+
+      - id: "environmental"
+        type: "environment"
+        query: "get_environment_context()"
+
+    # Fallbacks if sources fail
+    fallbacks:
+      recent_context: "empty_context"
+      user_state: "default_state"
+      environmental: "unknown_environment"
+
+  # Step 2: Process and infer intent
+  process:
+    steps:
+      - id: "extract_intent"
+        type: "ai"
+        model: "intent-classifier"
+        input: ["@trigger", "@recent_context"]
+        output: "intent"
+
+      - id: "enhance_context"
+        type: "ai"
+        model: "context-enhancer"
+        input: ["@intent", "@user_state"]
+        output: "enhanced_context"
+
+      - id: "generate_content"
+        type: "ai"
+        model: "content-generator"
+        input: ["@enhanced_context", "@template"]
+        output: "content"
+
+  # Step 3: Generate output
+  generate:
+    format: "adaptive-card"  # or "text", "voice", "video"
+
+    template:
+      type: "AdaptiveCard"
+      version: "1.5"
+
+      # Handlebars-style templating
+      body: |
+        {{#if (eq intent.type 'note')}}
+          # Note to Self
+          {{content.text}}
+        {{else if (eq intent.type 'reminder')}}
+          # Reminder: {{content.title}}
+          ⏰ {{content.time}}
+          📝 {{content.description}}
+        {{else}}
+          # {{content.title}}
+          {{content.body}}
+        {{/if}}
+
+      actions:
+        - type: "Action.Submit"
+          title: "Save"
+          data:
+            action: "save"
+            id: "{{content.id}}"
+
+        - type: "Action.ShowCard"
+          title: "Edit"
+          card:
+            type: "AdaptiveCard"
+            body:
+              - type: "Input.Text"
+                id: "edited_content"
+                value: "{{content.text}}"
+                isMultiline: true
+
+  # Step 4: Delivery options
+  deliver:
+    channels:
+      primary: "notification"
+      fallback: "email"
+
+    timing:
+      immediate: false
+      smart_delivery: true  # Respect user's attention state
+      batch_similar: true
+
+    confirmation:
+      required: "{{intent.requires_confirmation}}"
+      timeout: 10000
+
+# Privacy and ethics configuration
+privacy:
+  # Data handling
+  data:
+    storage: "local-encrypted"  # local-encrypted, cloud-encrypted, ephemeral
+    retention: "7-days"         # How long to keep data
+    sharing: "never"             # never, anonymized, with-consent
+    export_format: "json"        # User data export format
+
+  # Compliance
+  compliance:
+    gdpr: true
+    ccpa: true
+    coppa: false  # Not child-directed
+
+  # User rights
+  rights:
+    access: true
+    rectification: true
+    erasure: true  # Right to be forgotten
+    portability: true
+    object: true   # Object to processing
+
+# Transparency settings
+transparency:
+  # How visible is the AI's thinking?
+  level: "balanced"  # minimal, balanced, full, verbose
+
+  # What to show users
+  show:
+    reasoning: true
+    confidence: true
+    sources: true
+    alternatives: false
+
+  # Explanations
+  explanations:
+    before_action: "I'm about to {{action}} because {{reason}}"
+    after_action: "I {{action}} based on {{sources}}"
+    on_error: "I couldn't {{action}} because {{error}}"
+
+# Developer configuration
+developer:
+  # Testing
+  test:
+    fixtures: "./fixtures"
+    mocks: "./mocks"
+    coverage_threshold: 80
+
+  # Debugging
+  debug:
+    log_level: "info"  # error, warn, info, debug, trace
+    breakpoints: true
+    inspector: true
+
+  # Analytics
+  analytics:
+    enabled: false  # Opt-in only
+    events: ["activation", "success", "error"]
+    anonymized: true
+
+# Composition - combine with other agents
+composition:
+  # Can be extended by other agents
+  extensible: true
+
+  # Can extend these agents
+  extends:
+    - "com.jframe.base-agent"
+
+  # Can be composed with
+  compose_with:
+    - "com.jframe.calendar-agent"
+    - "com.jframe.email-agent"
+
+  # Provides these interfaces
+  provides:
+    - interface: "note-taker"
+      version: "1.0"
+    - interface: "reminder-setter"
+      version: "1.0"
+
+  # Requires these interfaces
+  requires:
+    - interface: "storage"
+      version: "^1.0"
+    - interface: "ai-provider"
+      version: "^2.0"
+
+# Marketplace metadata
+marketplace:
+  # Publishing info
+  publish:
+    public: true
+    category: "productivity"
+    tags: ["notes", "reminders", "organization"]
+    price: "free"  # free, freemium, paid
+
+  # Ratings and reviews
+  ratings:
+    enabled: true
+    moderated: true
+
+  # Monetization
+  monetization:
+    model: "free"  # free, subscription, one-time, usage-based
+    trial_days: 0
+    price_usd: 0
+
+  # Support
+  support:
+    email: "support@jframe.ai"
+    documentation: "https://docs.jframe.ai/agents/example"
+    issues: "https://github.com/neurodance/jframe/issues"
+
+# Localization
+localization:
+  default: "en-US"
+
+  supported:
+    - "en-US"
+    - "en-GB"
+    - "es-ES"
+    - "fr-FR"
+    - "de-DE"
+    - "ja-JP"
+    - "zh-CN"
+
+  # Localized strings
+  strings:
+    en-US:
+      greeting: "Hello! How can I help?"
+      error: "Something went wrong"
+      success: "Done!"
+
+    es-ES:
+      greeting: "¡Hola! ¿Cómo puedo ayudar?"
+      error: "Algo salió mal"
+      success: "¡Hecho!"
+
+# Versioning and updates
+versioning:
+  current: "1.0.0"
+  minimum_sdk: "0.8.0"
+
+  changelog:
+    "1.0.0": "Initial release"
+    "0.9.0": "Beta release with core features"
+
+  migration:
+    from: "0.9.0"
+    script: "./migrations/0.9-to-1.0.js"
+
+  deprecations:
+    - feature: "old_api_call"
+      since: "0.9.5"
+      remove: "2.0.0"
+      replacement: "new_api_call"
+
+# Security configuration
+security:
+  # Sandboxing
+  sandbox:
+    enabled: true
+    permissions: "strict"
+
+  # API keys and secrets (never in the file!)
+  secrets:
+    storage: "secure-enclave"  # secure-enclave, keychain, env
+    rotation: "30-days"
+
+  # Network security
+  network:
+    https_only: true
+    cors_origins: ["https://jframe.ai"]
+    rate_limit: "100/hour"
+
+  # Content security
+  content:
+    sanitize_input: true
+    escape_output: true
+    max_size: "10MB"
+
+# Performance constraints
+performance:
+  # Timing constraints
+  timing:
+    max_gather: 5000      # ms
+    max_process: 3000     # ms
+    max_generate: 2000    # ms
+    total_timeout: 10000  # ms
+
+  # Resource limits
+  resources:
+    max_memory: "50MB"
+    max_cpu: "10%"
+    max_network: "1MB"
+
+  # Caching
+  cache:
+    enabled: true
+    ttl: 3600  # seconds
+    strategy: "lru"  # lru, lfu, ttl
+
+# End of specification
