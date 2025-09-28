@@ -2,6 +2,8 @@
 
 An AI-powered wrapper for Adaptive Cards that uses GPT to generate beautiful, interactive cards from natural language prompts.
 
+> **Our Philosophy**: Under-promise and over-deliver. Always. See [JOTTR-CHARTER.md](./JOTTR-CHARTER.md) for our core principles.
+
 ## Features
 
 - 🤖 **AI-Powered Generation**: Uses OpenAI's GPT models to create Adaptive Cards from simple text prompts
