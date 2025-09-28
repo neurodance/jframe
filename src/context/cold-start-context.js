@@ -3,8 +3,10 @@
  * Captures environmental context without user history
  */
 
+import WeatherContext from './weather-context.js';
+
 export default class ColdStartContext {
-  constructor(environment = null) {
+  constructor(environment = null, options = {}) {
     this.detectionTime = new Date();
     // Allow injection of environment for testing
     this.env = environment || {
@@ -12,6 +14,20 @@ export default class ColdStartContext {
       window: typeof window !== 'undefined' ? window : null,
       Intl: typeof Intl !== 'undefined' ? Intl : null
     };
+
+    // Optional enhanced context providers
+    this.options = {
+      includeWeather: options.includeWeather || false,
+      weatherApiKey: options.weatherApiKey || null,
+      includeNews: options.includeNews || false,
+      includeEvents: options.includeEvents || false,
+      ...options
+    };
+
+    // Initialize weather context if enabled
+    if (this.options.includeWeather) {
+      this.weatherContext = new WeatherContext(this.options.weatherApiKey);
+    }
   }
 
   /**
@@ -23,13 +39,26 @@ export default class ColdStartContext {
     const environmental = this.detectEnvironmentalContext();
     const location = await this.detectLocationContext();
 
-    return {
+    const context = {
       temporal,
       environmental,
       location,
       confidence: this.calculateConfidence(temporal, environmental, location),
       detectedAt: this.detectionTime
     };
+
+    // Add enhanced contexts if enabled
+    if (this.options.includeWeather && this.weatherContext) {
+      if (location.latitude && location.longitude) {
+        context.weather = await this.weatherContext.getWeatherContext(
+          location.latitude,
+          location.longitude,
+          location.city
+        );
+      }
+    }
+
+    return context;
   }
 
   /**
