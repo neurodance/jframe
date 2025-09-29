@@ -1,0 +1,388 @@
+/**
+ * Jott Renderer Styles
+ * Enhances Adaptive Cards with progressive layers and intelligence
+ */
+
+/* Base Jott wrapper */
+.jott-wrapper {
+    position: relative;
+    width: 100%;
+    animation: jottFadeIn 0.3s ease-out;
+}
+
+@keyframes jottFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Layer indicator */
+.jott-layer-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+.layer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.layer-dot.available {
+    background: #bdbdbd;
+    cursor: pointer;
+}
+
+.layer-dot.available:hover {
+    transform: scale(1.3);
+    background: #9e9e9e;
+}
+
+.layer-dot.active {
+    width: 24px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Card container with layer-specific styles */
+.jott-card-container {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Layer-specific animations */
+.jott-wrapper[data-layer="glance"] .jott-card-container {
+    animation: glanceEntry 0.5s ease-out;
+}
+
+@keyframes glanceEntry {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.jott-wrapper[data-layer="scan"] .jott-card-container {
+    animation: scanEntry 0.6s ease-out;
+}
+
+@keyframes scanEntry {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.jott-wrapper[data-layer="read"] .jott-card-container {
+    animation: readEntry 0.7s ease-out;
+}
+
+@keyframes readEntry {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.jott-wrapper[data-layer="interact"] .jott-card-container {
+    animation: interactEntry 0.8s ease-out;
+}
+
+@keyframes interactEntry {
+    from {
+        transform: scale(0.9) rotate(-1deg);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+/* Enhanced Adaptive Card styles */
+.jott-enhanced {
+    position: relative;
+}
+
+/* Device-specific optimizations */
+.jott-wrapper[data-device="mobile"] .jott-enhanced {
+    font-size: 16px; /* Prevent zoom on iOS */
+}
+
+.jott-wrapper[data-device="mobile"] .ac-container {
+    padding: 12px;
+}
+
+.jott-wrapper[data-device="desktop"] .jott-enhanced {
+    transition: box-shadow 0.3s ease;
+}
+
+.jott-wrapper[data-device="desktop"] .jott-enhanced:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Progressive disclosure effects */
+.jott-progressive-hidden {
+    display: none;
+}
+
+.jott-progressive-reveal {
+    animation: progressiveReveal 0.5s ease-out;
+}
+
+@keyframes progressiveReveal {
+    from {
+        opacity: 0;
+        max-height: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+        transform: translateY(0);
+    }
+}
+
+/* Semantic density visualization */
+.jott-semantic-high {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-left: 4px solid #667eea;
+    padding-left: 12px;
+    margin: 8px 0;
+}
+
+.jott-semantic-medium {
+    border-left: 2px solid #9e9e9e;
+    padding-left: 8px;
+}
+
+.jott-semantic-low {
+    opacity: 0.8;
+    font-size: 0.95em;
+}
+
+/* Attention flow patterns */
+.jott-z-pattern {
+    display: grid;
+    grid-template-areas:
+        "primary secondary"
+        "content content"
+        "tertiary action";
+    gap: 16px;
+}
+
+.jott-f-pattern {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.jott-f-pattern > *:first-child {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Interactive elements */
+.jott-interactive {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.jott-interactive:hover {
+    transform: translateY(-2px);
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.jott-interactive:active {
+    transform: translateY(0);
+}
+
+/* Loading states */
+.jott-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.jott-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 0.4; }
+}
+
+/* Error states */
+.jott-error {
+    padding: 20px;
+    background: #ffebee;
+    border: 1px solid #ef5350;
+    border-radius: 8px;
+    color: #c62828;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Engagement indicators */
+.jott-engagement-ring {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4caf50;
+    animation: engagementPulse 2s infinite;
+}
+
+@keyframes engagementPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+/* Accessibility enhancements */
+.jott-wrapper:focus-within {
+    outline: 2px solid #667eea;
+    outline-offset: 4px;
+}
+
+.jott-high-contrast {
+    filter: contrast(1.2);
+}
+
+.jott-reduced-motion * {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* Mobile swipe hints */
+.jott-wrapper[data-device="mobile"]::after {
+    content: '‹ ›';
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    color: #9e9e9e;
+    font-size: 18px;
+    font-weight: 300;
+    animation: swipeHint 3s infinite;
+}
+
+@keyframes swipeHint {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+/* Print styles */
+@media print {
+    .jott-layer-indicator {
+        display: none;
+    }
+
+    .jott-wrapper[data-layer="read"] .jott-card-container {
+        display: block !important;
+    }
+
+    .jott-wrapper:not([data-layer="read"]) .jott-card-container {
+        display: none;
+    }
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+    .jott-z-pattern {
+        grid-template-areas:
+            "primary"
+            "secondary"
+            "content"
+            "tertiary"
+            "action";
+    }
+
+    .jott-layer-indicator {
+        padding: 8px;
+    }
+
+    .layer-dot {
+        width: 6px;
+        height: 6px;
+    }
+
+    .layer-dot.active {
+        width: 18px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jott-wrapper,
+    .jott-wrapper * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .jott-wrapper {
+        color-scheme: dark;
+    }
+
+    .layer-dot {
+        background: #424242;
+    }
+
+    .layer-dot.available {
+        background: #616161;
+    }
+
+    .layer-dot.available:hover {
+        background: #757575;
+    }
+
+    .jott-error {
+        background: #421414;
+        border-color: #aa2e2e;
+        color: #ffcdd2;
+    }
+}

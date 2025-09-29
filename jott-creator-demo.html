@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jott Creator - AI-Assisted Creation Workflow</title>
+
+    <!-- Adaptive Cards -->
+    <script src="https://unpkg.com/adaptivecards/dist/adaptivecards.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/adaptivecards/dist/css/adaptivecards.css">
+
+    <!-- Jott Components -->
+    <script src="src/jott-renderer.js"></script>
+    <script src="src/jott-creator.js"></script>
+    <script src="src/jott-ai-engine.js"></script>
+    <link rel="stylesheet" href="src/jott-renderer.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .creator-grid {
+            display: grid;
+            grid-template-columns: minmax(400px, 1fr) minmax(400px, 1fr);
+            gap: 30px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .input-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .output-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            min-height: 600px;
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-indicator {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .quick-prompts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .prompt-btn {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .prompt-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .prompt-btn strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .prompt-btn small {
+            color: #6c757d;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .intent-display {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .intent-display h4 {
+            margin-bottom: 10px;
+            font-family: inherit;
+            color: #495057;
+        }
+
+        .preview-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6c757d;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: #495057;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .jott-preview {
+            min-height: 400px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 12px;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e9ecef;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .workflow-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .workflow-status.success {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .workflow-status.error {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        /* Constrain Adaptive Cards rendering */
+        .ac-container {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+        }
+
+        .ac-adaptiveCard {
+            max-width: 100% !important;
+        }
+
+        /* Fix for wide content in Jott renderer */
+        .jott-wrapper {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .jott-card-container {
+            max-width: 100%;
+        }
+
+        @media (max-width: 968px) {
+            .creator-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-prompts {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Jott Creator</h1>
+            <p>Transform your ideas into intelligent, multi-layered communications</p>
+        </div>
+
+        <div class="creator-grid">
+            <!-- Input Panel -->
+            <div class="input-panel">
+                <h2>
+                    <span class="step-indicator">1</span>
+                    Describe Your Communication
+                </h2>
+
+                <div class="input-group">
+                    <label for="userInput">What do you want to communicate?</label>
+                    <textarea id="userInput" placeholder="Example: Create a product announcement for our new wireless headphones that emphasizes premium quality and 30-hour battery life..."></textarea>
+                </div>
+
+                <div class="quick-prompts">
+                    <div class="prompt-btn" onclick="setPrompt('product')">
+                        <strong>🛍️ Product Launch</strong>
+                        <small>Showcase a new product</small>
+                    </div>
+                    <div class="prompt-btn" onclick="setPrompt('article')">
+                        <strong>📰 News Article</strong>
+                        <small>Share breaking news</small>
+                    </div>
+                    <div class="prompt-btn" onclick="setPrompt('profile')">
+                        <strong>👤 Team Member</strong>
+                        <small>Introduce someone</small>
+                    </div>
+                    <div class="prompt-btn" onclick="setPrompt('announcement')">
+                        <strong>📢 Announcement</strong>
+                        <small>Important update</small>
+                    </div>
+                    <div class="prompt-btn" onclick="setPrompt('data')">
+                        <strong>📊 Data Report</strong>
+                        <small>Present metrics</small>
+                    </div>
+                    <div class="prompt-btn" onclick="setPrompt('form')">
+                        <strong>📝 Survey Form</strong>
+                        <small>Collect feedback</small>
+                    </div>
+                </div>
+
+                <button id="createBtn" onclick="createJott()">
+                    Generate Intelligent Jott
+                </button>
+
+                <div class="options">
+                    <div class="option">
+                        <input type="checkbox" id="autoProgress" checked>
+                        <label for="autoProgress">Auto-progress layers</label>
+                    </div>
+                    <div class="option">
+                        <input type="checkbox" id="showIntent" checked>
+                        <label for="showIntent">Show AI intent analysis</label>
+                    </div>
+                    <div class="option">
+                        <input type="checkbox" id="optimizeCognition" checked>
+                        <label for="optimizeCognition">Cognitive optimization</label>
+                    </div>
+                    <div class="option">
+                        <input type="checkbox" id="mobileFirst">
+                        <label for="mobileFirst">Mobile-first design</label>
+                    </div>
+                </div>
+
+                <div class="intent-display" id="intentDisplay" style="display: none;">
+                    <h4>AI Intent Analysis</h4>
+                    <pre id="intentJson"></pre>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="output-panel">
+                <h2>
+                    <span class="step-indicator">2</span>
+                    Your Generated Jott
+                </h2>
+
+                <div class="workflow-status" id="workflowStatus" style="display: none;">
+                    <span id="statusText">Processing...</span>
+                </div>
+
+                <div class="preview-tabs">
+                    <button class="tab active" onclick="switchTab('preview')">Preview</button>
+                    <button class="tab" onclick="switchTab('structure')">Structure</button>
+                    <button class="tab" onclick="switchTab('metrics')">Metrics</button>
+                </div>
+
+                <div class="jott-preview" id="jottPreview">
+                    <div style="text-align: center; color: #6c757d; padding: 100px 20px;">
+                        <div style="font-size: 3em; margin-bottom: 20px;">✨</div>
+                        <p>Enter your communication intent and click "Generate" to create an intelligent Jott</p>
+                        <p style="margin-top: 10px; font-size: 0.9em;">Try one of the quick prompts to get started!</p>
+                    </div>
+                </div>
+
+                <div class="jott-preview" id="jottStructure" style="display: none;">
+                    <pre id="structureJson" style="font-family: monospace; font-size: 12px; overflow: auto; max-height: 500px; max-width: 100%; word-wrap: break-word; white-space: pre-wrap;"></pre>
+                </div>
+
+                <div class="jott-preview" id="jottMetrics" style="display: none;">
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="layerCount">0</div>
+                            <div class="stat-label">Layers</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="elementCount">0</div>
+                            <div class="stat-label">Elements</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="semanticDensity">0</div>
+                            <div class="stat-label">Density</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="cognitiveLoad">-</div>
+                            <div class="stat-label">Complexity</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 30px; padding: 20px; background: white; border-radius: 8px;">
+                        <h4 style="margin-bottom: 15px; color: #333;">Optimization Analysis</h4>
+                        <ul id="optimizationList" style="list-style: none; padding: 0;">
+                            <li style="padding: 8px 0; color: #666;">No Jott generated yet</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample prompts for quick testing
+        const samplePrompts = {
+            product: "Create a product announcement for our new Premium Wireless Headphones. Emphasize the 30-hour battery life, active noise cancellation, and premium comfort design. Target audience is tech-savvy professionals who value quality audio. Price point is $299.",
+            article: "Write a breaking news article about a major AI breakthrough. Scientists have achieved human-level understanding in a new model. Include key statistics and expert quotes. Make it urgent but authoritative.",
+            profile: "Introduce our new Senior Software Engineer, Jordan Developer. 8 years experience, led 42 projects, manages a team of 12. Specializes in cloud architecture and microservices. Make it professional but approachable.",
+            announcement: "Announce our company's Q4 results. Revenue up 23% to $2.4M, user base grew to 45.2K active users. Highlight growth trajectory and thank the team. Tone should be celebratory but professional.",
+            data: "Present our website analytics dashboard for Q4 2024. Show visitor trends, conversion rates, and top performing pages. Make data digestible and actionable for marketing team.",
+            form: "Create a customer satisfaction survey for our product. Collect ratings, feedback on specific features, and suggestions for improvements. Keep it brief but comprehensive."
+        };
+
+        let currentJott = null;
+        let jottRenderer = null;
+        let jottCreator = null;
+        let jottAIEngine = null;
+
+        // Initialize creator
+        function initCreator() {
+            jottCreator = new JottCreator({
+                apiKey: 'demo', // Use demo mode
+                temperature: 0.7
+            });
+            jottAIEngine = new JottAIEngine();
+        }
+
+        // Set sample prompt
+        function setPrompt(type) {
+            document.getElementById('userInput').value = samplePrompts[type];
+        }
+
+        // Create Jott from user input
+        async function createJott() {
+            const userInput = document.getElementById('userInput').value.trim();
+
+            if (!userInput) {
+                showStatus('Please enter a communication intent', 'error');
+                return;
+            }
+
+            const createBtn = document.getElementById('createBtn');
+            createBtn.disabled = true;
+            createBtn.textContent = 'Generating...';
+
+            showStatus('Analyzing your intent...', 'info');
+
+            try {
+                // Simulate processing delay for better UX
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // Create Jott using AI workflow
+                const result = await jottCreator.createJott(userInput);
+
+                if (result.success) {
+                    // Apply AI enhancements
+                    const aiEnhanced = await jottAIEngine.transformWithAI(userInput, result.metadata.intent);
+
+                    // Merge AI enhancements into the Jott
+                    currentJott = mergeAIEnhancements(result.jott, aiEnhanced);
+
+                    // Show intent analysis and AI contributions
+                    if (document.getElementById('showIntent').checked) {
+                        displayIntent(result.metadata.intent);
+                        displayAIContributions(aiEnhanced);
+                    }
+
+                    // Update workflow status with AI score
+                    const aiScore = aiEnhanced.aiScore.score;
+                    showStatus(`Jott created with ${aiScore}% AI enhancement!`, 'success');
+
+                    // Render the Jott
+                    renderJott(currentJott);
+
+                    // Update structure view
+                    updateStructure(currentJott);
+
+                    // Update metrics with AI insights
+                    updateMetrics(currentJott, aiEnhanced);
+
+                } else {
+                    showStatus('Using simplified Jott: ' + result.error, 'error');
+                    currentJott = result.fallback;
+                    renderJott(currentJott);
+                }
+
+            } catch (error) {
+                console.error('Creation error:', error);
+                showStatus('Error creating Jott: ' + error.message, 'error');
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = 'Generate Intelligent Jott';
+            }
+        }
+
+        // Display intent analysis
+        function displayIntent(intent) {
+            const intentDisplay = document.getElementById('intentDisplay');
+            const intentJson = document.getElementById('intentJson');
+
+            intentDisplay.style.display = 'block';
+            intentJson.textContent = JSON.stringify(intent, null, 2);
+        }
+
+        // Display AI contributions
+        function displayAIContributions(aiEnhanced) {
+            // Add AI contributions to the intent display
+            const intentJson = document.getElementById('intentJson');
+            const combined = {
+                intent: JSON.parse(intentJson.textContent),
+                aiEnhancements: aiEnhanced.aiContributions.aiEnhancements,
+                aiScore: aiEnhanced.aiScore
+            };
+            intentJson.textContent = JSON.stringify(combined, null, 2);
+        }
+
+        // Merge AI enhancements into Jott
+        function mergeAIEnhancements(jott, aiEnhanced) {
+            // Add AI metadata to the Jott
+            jott.jott.aiEnhancements = aiEnhanced.aiContributions;
+
+            // Add emotional hooks to glance layer
+            if (aiEnhanced.enhanced.emotionalLayer?.hooks?.length > 0) {
+                const hook = aiEnhanced.enhanced.emotionalLayer.hooks[0];
+                // Check if glance layer exists and has body
+                if (jott.jott.layers.glance?.body?.[0]?.text && !jott.jott.layers.glance.body[0].text.includes('✨')) {
+                    // Add emotional indicator
+                    jott.jott.layers.glance.emotional = hook;
+                }
+            }
+
+            // Add cognitive breadcrumbs between layers
+            if (aiEnhanced.enhanced.cognitiveStructure?.transitions) {
+                jott.jott.transitions = aiEnhanced.enhanced.cognitiveStructure.transitions;
+            }
+
+            // Add predictive adaptations
+            if (aiEnhanced.enhanced.adaptivePredictions) {
+                jott.jott.predictions = aiEnhanced.enhanced.adaptivePredictions;
+            }
+
+            // Add orchestration metadata
+            if (aiEnhanced.enhanced.orchestration) {
+                jott.jott.orchestration = aiEnhanced.enhanced.orchestration;
+            }
+
+            return jott;
+        }
+
+        // Render Jott with renderer
+        function renderJott(jottDefinition) {
+            const preview = document.getElementById('jottPreview');
+            preview.innerHTML = '';
+
+            // Clean up existing renderer
+            if (jottRenderer) {
+                jottRenderer.destroy();
+            }
+
+            // Create new renderer
+            const autoProgress = document.getElementById('autoProgress').checked;
+            jottRenderer = new JottRenderer(
+                jottDefinition,
+                preview,
+                {
+                    startLayer: 'glance',
+                    autoProgress: autoProgress,
+                    enableAnalytics: true
+                }
+            );
+
+            // Attach event listeners
+            preview.addEventListener('jott:layerChanged', (e) => {
+                console.log('Layer changed:', e.detail);
+            });
+
+            preview.addEventListener('jott:action', (e) => {
+                console.log('Action triggered:', e.detail);
+            });
+
+            // Apply mobile-first if checked
+            if (document.getElementById('mobileFirst').checked) {
+                jottRenderer.context.device = 'mobile';
+            }
+
+            // Render
+            jottRenderer.render();
+        }
+
+        // Update structure view
+        function updateStructure(jott) {
+            const structureJson = document.getElementById('structureJson');
+            structureJson.textContent = JSON.stringify(jott, null, 2);
+        }
+
+        // Update metrics
+        function updateMetrics(jott, aiEnhanced) {
+            // Count layers
+            const layers = Object.keys(jott.jott.layers || {});
+            document.getElementById('layerCount').textContent = layers.length;
+
+            // Count elements
+            let elementCount = 0;
+            layers.forEach(layer => {
+                const body = jott.jott.layers[layer].body || [];
+                elementCount += body.length;
+            });
+            document.getElementById('elementCount').textContent = elementCount;
+
+            // Semantic density
+            const density = jott.jott.cognition?.semanticDensity || 0;
+            document.getElementById('semanticDensity').textContent = (density * 10).toFixed(1);
+
+            // Cognitive load
+            const load = jott.jott.cognition?.cognitiveLoad || 'moderate';
+            document.getElementById('cognitiveLoad').textContent = load.charAt(0).toUpperCase() + load.slice(1);
+
+            // Optimization analysis with AI contributions
+            const optimizations = [];
+
+            // Show AI-specific enhancements if available
+            if (aiEnhanced) {
+                optimizations.push(`🤖 AI Score: ${aiEnhanced.aiScore.score}% - ${aiEnhanced.aiScore.interpretation}`);
+
+                if (aiEnhanced.aiContributions.aiEnhancements) {
+                    aiEnhanced.aiContributions.aiEnhancements.forEach(enhancement => {
+                        optimizations.push(`✨ AI: ${enhancement}`);
+                    });
+                }
+
+                // Show specific AI metrics
+                if (aiEnhanced.aiScore.metrics) {
+                    const metrics = aiEnhanced.aiScore.metrics;
+                    if (metrics.semanticEnrichment > 50) {
+                        optimizations.push(`📊 Semantic enrichment: ${Math.round(metrics.semanticEnrichment)}%`);
+                    }
+                    if (metrics.emotionalDepth > 40) {
+                        optimizations.push(`❤️ Emotional resonance: ${Math.round(metrics.emotionalDepth)}%`);
+                    }
+                    if (metrics.cognitiveOptimization > 60) {
+                        optimizations.push(`🧠 Cognitive optimization: ${Math.round(metrics.cognitiveOptimization)}%`);
+                    }
+                    if (metrics.adaptiveIntelligence > 50) {
+                        optimizations.push(`🎯 Adaptive intelligence: ${Math.round(metrics.adaptiveIntelligence)}%`);
+                    }
+                }
+            }
+
+            // Standard optimizations
+            if (jott.jott.cognition?.attentionPattern) {
+                optimizations.push(`✓ ${jott.jott.cognition.attentionPattern} attention pattern applied`);
+            }
+            if (layers.includes('glance')) {
+                optimizations.push('✓ 3-second glance layer optimized');
+            }
+            if (layers.includes('scan')) {
+                optimizations.push('✓ 10-second scan layer structured');
+            }
+            if (layers.includes('interact')) {
+                optimizations.push('✓ Interactive elements included');
+            }
+            if (document.getElementById('optimizeCognition').checked) {
+                optimizations.push('✓ Cognitive load optimization applied');
+                optimizations.push('✓ Visual hierarchy established');
+            }
+
+            const optimizationList = document.getElementById('optimizationList');
+            optimizationList.innerHTML = optimizations.map(opt => {
+                const color = opt.startsWith('🤖') ? '#667eea' :
+                            opt.startsWith('✨') ? '#764ba2' :
+                            opt.includes('❤️') || opt.includes('🧠') || opt.includes('📊') ? '#9c27b0' :
+                            '#4caf50';
+                return `<li style="padding: 8px 0; color: ${color}; font-weight: ${opt.startsWith('🤖') ? 'bold' : 'normal'};">${opt}</li>`;
+            }).join('');
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show/hide content
+            document.getElementById('jottPreview').style.display = tab === 'preview' ? 'block' : 'none';
+            document.getElementById('jottStructure').style.display = tab === 'structure' ? 'block' : 'none';
+            document.getElementById('jottMetrics').style.display = tab === 'metrics' ? 'block' : 'none';
+        }
+
+        // Show workflow status
+        function showStatus(message, type) {
+            const status = document.getElementById('workflowStatus');
+            const statusText = document.getElementById('statusText');
+
+            status.style.display = 'flex';
+            status.className = 'workflow-status';
+            if (type === 'success') status.classList.add('success');
+            if (type === 'error') status.classList.add('error');
+
+            statusText.textContent = message;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initCreator();
+        });
+
+        // Handle Enter key in textarea
+        document.getElementById('userInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                createJott();
+            }
+        });
+    </script>
+</body>
+</html>

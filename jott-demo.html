@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jott Renderer Demo - Progressive Layers</title>
+
+    <!-- Adaptive Cards -->
+    <script src="https://unpkg.com/adaptivecards/dist/adaptivecards.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/adaptivecards/dist/css/adaptivecards.css">
+
+    <!-- Jott Renderer -->
+    <script src="src/jott-renderer.js"></script>
+    <link rel="stylesheet" href="src/jott-renderer.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .jott-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 500px;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        button {
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .event-log {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .event-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .demo-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .demo-card {
+            padding: 15px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .demo-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+
+        .demo-card h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .demo-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 968px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                position: relative;
+                top: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>🧠 Jott Renderer Demo</h1>
+        <p class="subtitle">Experience progressive layers and intelligent adaptation</p>
+
+        <div class="demo-selector">
+            <div class="demo-card active" onclick="loadDemo('product')">
+                <h4>Product Jott</h4>
+                <p>E-commerce product with layers</p>
+            </div>
+            <div class="demo-card" onclick="loadDemo('article')">
+                <h4>Article Jott</h4>
+                <p>News article with progressive read</p>
+            </div>
+            <div class="demo-card" onclick="loadDemo('profile')">
+                <h4>Profile Jott</h4>
+                <p>User profile with interactions</p>
+            </div>
+            <div class="demo-card" onclick="loadDemo('dashboard')">
+                <h4>Dashboard Jott</h4>
+                <p>Data visualization layers</p>
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <div class="controls">
+                <div class="control-group">
+                    <h3>Layer Controls</h3>
+                    <div class="button-group">
+                        <button onclick="jottRenderer.switchToLayer('glance')">Glance (3s)</button>
+                        <button onclick="jottRenderer.switchToLayer('scan')">Scan (10s)</button>
+                        <button onclick="jottRenderer.switchToLayer('read')">Read (30s)</button>
+                        <button onclick="jottRenderer.switchToLayer('interact')">Interact</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Options</h3>
+                    <div class="button-group">
+                        <button onclick="toggleAutoProgress()">Toggle Auto-Progress</button>
+                        <button onclick="simulateMobile()">Simulate Mobile</button>
+                        <button onclick="simulateSlow()">Simulate Slow Network</button>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Actions</h3>
+                    <div class="button-group">
+                        <button class="primary" onclick="recreateJott()">Re-render Jott</button>
+                    </div>
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat-label">Current Layer:</span>
+                        <span class="stat-value" id="currentLayer">glance</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Time on Jott:</span>
+                        <span class="stat-value" id="timeOnJott">0s</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Interactions:</span>
+                        <span class="stat-value" id="interactions">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Device:</span>
+                        <span class="stat-value" id="device">desktop</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Auto-Progress:</span>
+                        <span class="stat-value" id="autoProgress">ON</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Event Log</h3>
+                    <div class="event-log" id="eventLog">
+                        <!-- Events will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="jott-container" id="jottContainer">
+                <!-- Jott will render here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Demo Jott definitions
+        const jottDefinitions = {
+            product: {
+                jott: {
+                    version: "1.0",
+                    showLayerIndicator: true,
+                    layers: {
+                        glance: {
+                            body: [
+                                {
+                                    type: "ColumnSet",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "auto",
+                                            items: [{
+                                                type: "Image",
+                                                url: "https://via.placeholder.com/100x100/667eea/ffffff?text=Product",
+                                                size: "Medium"
+                                            }]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "Premium Wireless Headphones",
+                                                    size: "Large",
+                                                    weight: "Bolder"
+                                                },
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "$299.99",
+                                                    size: "Medium",
+                                                    color: "Accent",
+                                                    weight: "Bolder"
+                                                },
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "⭐⭐⭐⭐⭐ (2,451 reviews)",
+                                                    size: "Small"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        scan: {
+                            body: [
+                                {
+                                    type: "Image",
+                                    url: "https://via.placeholder.com/400x200/667eea/ffffff?text=Product+Hero",
+                                    size: "Stretch"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Premium Wireless Headphones",
+                                    size: "Large",
+                                    weight: "Bolder",
+                                    spacing: "Medium"
+                                },
+                                {
+                                    type: "ColumnSet",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "auto",
+                                            items: [{
+                                                type: "TextBlock",
+                                                text: "$299.99",
+                                                size: "Large",
+                                                color: "Accent",
+                                                weight: "Bolder"
+                                            }]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [{
+                                                type: "TextBlock",
+                                                text: "⭐⭐⭐⭐⭐ 2,451 reviews",
+                                                horizontalAlignment: "Right"
+                                            }]
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "Container",
+                                    separator: true,
+                                    spacing: "Medium",
+                                    items: [
+                                        { type: "TextBlock", text: "✓ Active Noise Cancellation", wrap: true },
+                                        { type: "TextBlock", text: "✓ 30-hour battery life", wrap: true },
+                                        { type: "TextBlock", text: "✓ Premium comfort design", wrap: true },
+                                        { type: "TextBlock", text: "✓ Free shipping & returns", wrap: true }
+                                    ]
+                                }
+                            ],
+                            actions: [
+                                {
+                                    type: "Action.Submit",
+                                    title: "Add to Cart",
+                                    style: "positive",
+                                    data: { action: "addToCart" }
+                                },
+                                {
+                                    type: "Action.Submit",
+                                    title: "View Details",
+                                    data: { jottAction: "progressLayer" }
+                                }
+                            ]
+                        },
+                        read: {
+                            body: [
+                                {
+                                    type: "Image",
+                                    url: "https://via.placeholder.com/600x300/667eea/ffffff?text=Product+Gallery",
+                                    size: "Stretch"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Premium Wireless Headphones",
+                                    size: "ExtraLarge",
+                                    weight: "Bolder",
+                                    spacing: "Medium"
+                                },
+                                {
+                                    type: "ColumnSet",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "$299.99",
+                                                    size: "Large",
+                                                    color: "Accent",
+                                                    weight: "Bolder"
+                                                },
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "or 4 interest-free payments of $75",
+                                                    size: "Small",
+                                                    isSubtle: true
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "auto",
+                                            items: [{
+                                                type: "TextBlock",
+                                                text: "⭐⭐⭐⭐⭐ 4.8/5.0",
+                                                size: "Medium"
+                                            }]
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "About this product",
+                                    weight: "Bolder",
+                                    size: "Medium",
+                                    spacing: "Large"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Experience audio perfection with our flagship headphones. Featuring industry-leading noise cancellation, these headphones create a personalized sound bubble that lets you focus on what matters most - your music, calls, or silence.",
+                                    wrap: true
+                                },
+                                {
+                                    type: "FactSet",
+                                    separator: true,
+                                    spacing: "Large",
+                                    facts: [
+                                        { title: "Battery Life:", value: "30 hours" },
+                                        { title: "Charge Time:", value: "2.5 hours" },
+                                        { title: "Quick Charge:", value: "10 min = 3 hours" },
+                                        { title: "Bluetooth:", value: "5.2 Multi-point" },
+                                        { title: "Weight:", value: "254g" },
+                                        { title: "Warranty:", value: "2 years" }
+                                    ]
+                                },
+                                {
+                                    type: "Container",
+                                    separator: true,
+                                    spacing: "Large",
+                                    items: [
+                                        {
+                                            type: "TextBlock",
+                                            text: "What's in the box",
+                                            weight: "Bolder",
+                                            size: "Medium"
+                                        },
+                                        { type: "TextBlock", text: "• Premium Headphones", wrap: true },
+                                        { type: "TextBlock", text: "• Carrying case", wrap: true },
+                                        { type: "TextBlock", text: "• USB-C cable", wrap: true },
+                                        { type: "TextBlock", text: "• 3.5mm audio cable", wrap: true },
+                                        { type: "TextBlock", text: "• Airplane adapter", wrap: true }
+                                    ]
+                                }
+                            ],
+                            actions: [
+                                {
+                                    type: "Action.Submit",
+                                    title: "Add to Cart - $299.99",
+                                    style: "positive",
+                                    data: { action: "addToCart" }
+                                },
+                                {
+                                    type: "Action.Submit",
+                                    title: "Save for Later",
+                                    data: { action: "save" }
+                                },
+                                {
+                                    type: "Action.Submit",
+                                    title: "Compare",
+                                    data: { action: "compare" }
+                                }
+                            ]
+                        },
+                        interact: {
+                            body: [
+                                {
+                                    type: "TextBlock",
+                                    text: "Customize Your Order",
+                                    size: "Large",
+                                    weight: "Bolder"
+                                },
+                                {
+                                    type: "Input.ChoiceSet",
+                                    id: "color",
+                                    label: "Color",
+                                    style: "expanded",
+                                    choices: [
+                                        { title: "Midnight Black", value: "black" },
+                                        { title: "Silver", value: "silver" },
+                                        { title: "Rose Gold", value: "rose" }
+                                    ],
+                                    value: "black"
+                                },
+                                {
+                                    type: "Input.Toggle",
+                                    id: "protection",
+                                    title: "Add 3-Year Protection Plan (+$49)",
+                                    value: "false"
+                                },
+                                {
+                                    type: "Input.Number",
+                                    id: "quantity",
+                                    label: "Quantity",
+                                    min: 1,
+                                    max: 10,
+                                    value: 1
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Delivery Options",
+                                    weight: "Bolder",
+                                    separator: true,
+                                    spacing: "Large"
+                                },
+                                {
+                                    type: "Input.ChoiceSet",
+                                    id: "delivery",
+                                    style: "expanded",
+                                    choices: [
+                                        { title: "Standard (5-7 days) - Free", value: "standard" },
+                                        { title: "Express (2-3 days) - $15", value: "express" },
+                                        { title: "Next Day - $25", value: "nextday" }
+                                    ],
+                                    value: "standard"
+                                }
+                            ],
+                            actions: [
+                                {
+                                    type: "Action.Submit",
+                                    title: "Proceed to Checkout",
+                                    style: "positive",
+                                    data: { action: "checkout" }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            article: {
+                jott: {
+                    version: "1.0",
+                    showLayerIndicator: true,
+                    layers: {
+                        glance: {
+                            body: [
+                                {
+                                    type: "TextBlock",
+                                    text: "📰 Breaking: AI Breakthrough",
+                                    size: "Large",
+                                    weight: "Bolder"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Revolutionary discovery enables true understanding",
+                                    wrap: true,
+                                    isSubtle: true
+                                }
+                            ]
+                        },
+                        scan: {
+                            body: [
+                                {
+                                    type: "TextBlock",
+                                    text: "AI Achieves Human-Level Understanding",
+                                    size: "Large",
+                                    weight: "Bolder"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Tech Today • 5 min read • 2 hours ago",
+                                    size: "Small",
+                                    isSubtle: true,
+                                    spacing: "None"
+                                },
+                                {
+                                    type: "Container",
+                                    separator: true,
+                                    spacing: "Medium",
+                                    items: [
+                                        { type: "TextBlock", text: "• New model passes comprehensive reasoning tests", wrap: true },
+                                        { type: "TextBlock", text: "• Demonstrates contextual awareness across domains", wrap: true },
+                                        { type: "TextBlock", text: "• Industry experts call it 'paradigm shift'", wrap: true },
+                                        { type: "TextBlock", text: "• Implications for healthcare, education, science", wrap: true }
+                                    ]
+                                }
+                            ]
+                        },
+                        read: {
+                            body: [
+                                {
+                                    type: "TextBlock",
+                                    text: "AI Achieves Human-Level Understanding in Landmark Study",
+                                    size: "ExtraLarge",
+                                    weight: "Bolder",
+                                    wrap: true
+                                },
+                                {
+                                    type: "ColumnSet",
+                                    spacing: "Small",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "auto",
+                                            items: [{
+                                                type: "TextBlock",
+                                                text: "By Sarah Chen",
+                                                size: "Small"
+                                            }]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [{
+                                                type: "TextBlock",
+                                                text: "Tech Today • March 15, 2024",
+                                                size: "Small",
+                                                horizontalAlignment: "Right",
+                                                isSubtle: true
+                                            }]
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "In a groundbreaking development that promises to reshape our understanding of artificial intelligence, researchers have successfully demonstrated a new AI system capable of human-level comprehension across multiple domains.",
+                                    wrap: true,
+                                    spacing: "Large"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "The breakthrough, published today in Nature, shows the AI system successfully navigating complex reasoning tasks that have long been considered uniquely human capabilities.",
+                                    wrap: true,
+                                    spacing: "Medium"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Key Achievements",
+                                    weight: "Bolder",
+                                    size: "Medium",
+                                    separator: true,
+                                    spacing: "Large"
+                                },
+                                {
+                                    type: "FactSet",
+                                    facts: [
+                                        { title: "Reasoning Score:", value: "98.7%" },
+                                        { title: "Context Retention:", value: "10,000+ tokens" },
+                                        { title: "Cross-domain Transfer:", value: "Successful" },
+                                        { title: "Energy Efficiency:", value: "90% improved" }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            profile: {
+                jott: {
+                    version: "1.0",
+                    showLayerIndicator: true,
+                    layers: {
+                        glance: {
+                            body: [
+                                {
+                                    type: "ColumnSet",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "auto",
+                                            items: [{
+                                                type: "Image",
+                                                url: "https://via.placeholder.com/60x60/667eea/ffffff?text=JD",
+                                                style: "Person",
+                                                size: "Small"
+                                            }]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "Jordan Developer",
+                                                    weight: "Bolder"
+                                                },
+                                                {
+                                                    type: "TextBlock",
+                                                    text: "Senior Software Engineer",
+                                                    size: "Small",
+                                                    isSubtle: true
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        scan: {
+                            body: [
+                                {
+                                    type: "Image",
+                                    url: "https://via.placeholder.com/100x100/667eea/ffffff?text=JD",
+                                    style: "Person",
+                                    size: "Medium",
+                                    horizontalAlignment: "Center"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Jordan Developer",
+                                    size: "Large",
+                                    weight: "Bolder",
+                                    horizontalAlignment: "Center"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "Senior Software Engineer @ TechCorp",
+                                    horizontalAlignment: "Center",
+                                    isSubtle: true
+                                },
+                                {
+                                    type: "ColumnSet",
+                                    separator: true,
+                                    spacing: "Medium",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                { type: "TextBlock", text: "Projects", isSubtle: true, size: "Small" },
+                                                { type: "TextBlock", text: "42", weight: "Bolder" }
+                                            ]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                { type: "TextBlock", text: "Team Size", isSubtle: true, size: "Small" },
+                                                { type: "TextBlock", text: "12", weight: "Bolder" }
+                                            ]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                { type: "TextBlock", text: "Years", isSubtle: true, size: "Small" },
+                                                { type: "TextBlock", text: "8", weight: "Bolder" }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            dashboard: {
+                jott: {
+                    version: "1.0",
+                    showLayerIndicator: true,
+                    layers: {
+                        glance: {
+                            body: [
+                                {
+                                    type: "TextBlock",
+                                    text: "📊 Q4 Performance",
+                                    size: "Large",
+                                    weight: "Bolder"
+                                },
+                                {
+                                    type: "TextBlock",
+                                    text: "↑ 23% Growth",
+                                    size: "Medium",
+                                    color: "Good",
+                                    weight: "Bolder"
+                                }
+                            ]
+                        },
+                        scan: {
+                            body: [
+                                {
+                                    type: "TextBlock",
+                                    text: "Q4 2024 Dashboard",
+                                    size: "Large",
+                                    weight: "Bolder"
+                                },
+                                {
+                                    type: "ColumnSet",
+                                    separator: true,
+                                    spacing: "Medium",
+                                    columns: [
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                { type: "TextBlock", text: "Revenue", isSubtle: true },
+                                                { type: "TextBlock", text: "$2.4M", size: "Large", weight: "Bolder", color: "Good" }
+                                            ]
+                                        },
+                                        {
+                                            type: "Column",
+                                            width: "stretch",
+                                            items: [
+                                                { type: "TextBlock", text: "Users", isSubtle: true },
+                                                { type: "TextBlock", text: "45.2K", size: "Large", weight: "Bolder" }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+
+        // Global variables
+        let jottRenderer = null;
+        let currentDemo = 'product';
+        let autoProgressEnabled = true;
+        let timeInterval = null;
+        let interactionCount = 0;
+
+        // Initialize demo
+        function initDemo() {
+            recreateJott();
+            startTimeTracking();
+        }
+
+        // Load specific demo
+        function loadDemo(demoType) {
+            currentDemo = demoType;
+
+            // Update UI
+            document.querySelectorAll('.demo-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.target.closest('.demo-card').classList.add('active');
+
+            // Recreate Jott
+            recreateJott();
+        }
+
+        // Create/recreate Jott renderer
+        function recreateJott() {
+            const container = document.getElementById('jottContainer');
+
+            // Cleanup existing renderer
+            if (jottRenderer) {
+                jottRenderer.destroy();
+            }
+
+            // Reset stats
+            interactionCount = 0;
+            updateStats();
+
+            // Create new renderer
+            jottRenderer = new JottRenderer(
+                jottDefinitions[currentDemo],
+                container,
+                {
+                    startLayer: 'glance',
+                    autoProgress: autoProgressEnabled,
+                    enableAnalytics: true
+                }
+            );
+
+            // Attach event listeners
+            attachEventListeners();
+
+            // Render
+            jottRenderer.render();
+
+            logEvent('Jott created', { demo: currentDemo });
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            const container = document.getElementById('jottContainer');
+
+            container.addEventListener('jott:layerChanged', (e) => {
+                updateStats();
+                logEvent('Layer changed', e.detail);
+            });
+
+            container.addEventListener('jott:action', (e) => {
+                interactionCount++;
+                updateStats();
+                logEvent('Action triggered', e.detail);
+            });
+
+            container.addEventListener('jott:analytics', (e) => {
+                if (e.detail.event === 'engagement') {
+                    logEvent('Engagement', e.detail);
+                }
+            });
+
+            container.addEventListener('jott:rendered', (e) => {
+                updateStats();
+                logEvent('Rendered', { layer: e.detail.layer });
+            });
+        }
+
+        // Toggle auto-progression
+        function toggleAutoProgress() {
+            autoProgressEnabled = !autoProgressEnabled;
+            jottRenderer.options.autoProgress = autoProgressEnabled;
+
+            if (!autoProgressEnabled && jottRenderer.progressionTimer) {
+                clearTimeout(jottRenderer.progressionTimer);
+            } else if (autoProgressEnabled) {
+                jottRenderer.startAutoProgression();
+            }
+
+            updateStats();
+            logEvent('Auto-progress toggled', { enabled: autoProgressEnabled });
+        }
+
+        // Simulate mobile device
+        function simulateMobile() {
+            jottRenderer.context.device = jottRenderer.context.device === 'mobile' ? 'desktop' : 'mobile';
+            recreateJott();
+            logEvent('Device simulation', { device: jottRenderer.context.device });
+        }
+
+        // Simulate slow network
+        function simulateSlow() {
+            jottRenderer.context.network.type = jottRenderer.context.network.type === 'slow-2g' ? '4g' : 'slow-2g';
+            recreateJott();
+            logEvent('Network simulation', { type: jottRenderer.context.network.type });
+        }
+
+        // Update statistics display
+        function updateStats() {
+            if (!jottRenderer) return;
+
+            document.getElementById('currentLayer').textContent = jottRenderer.currentLayer;
+            document.getElementById('interactions').textContent = interactionCount;
+            document.getElementById('device').textContent = jottRenderer.context.device;
+            document.getElementById('autoProgress').textContent = autoProgressEnabled ? 'ON' : 'OFF';
+        }
+
+        // Track time on Jott
+        function startTimeTracking() {
+            const startTime = Date.now();
+
+            if (timeInterval) {
+                clearInterval(timeInterval);
+            }
+
+            timeInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timeOnJott').textContent = `${elapsed}s`;
+            }, 1000);
+        }
+
+        // Log events
+        function logEvent(eventName, details) {
+            const log = document.getElementById('eventLog');
+            const entry = document.createElement('div');
+            entry.className = 'event-entry';
+
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${eventName}`;
+
+            if (details) {
+                entry.textContent += ': ' + JSON.stringify(details, null, 2).substring(0, 100);
+            }
+
+            log.insertBefore(entry, log.firstChild);
+
+            // Limit log entries
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initDemo);
+    </script>
+</body>
+</html>
