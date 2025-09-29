@@ -348,3 +348,6 @@ class ExtensibilityFramework {
 ## Conclusion
 
 By combining best-in-class open source technologies with our unique principles of **conciseness** and **extensibility**, we create a blue ocean opportunity in the interactive content space. Our dual approach—open source infrastructure (JFrame) and commercial creative platform (Jottr.io)—ensures both ecosystem growth and revenue generation while respecting and leveraging our complex stakeholder relationships.
+
+## Addenda
+1. Utilize visual amplification: graphics, design, images, video, drawings, "infographics on the fly", sequenced rendering for carousel or slider, multiple card frame layouts for heroes, lists, grids, etc., plug-in frame combinations for dashboards, D3 & mermaid support, AI + manual editing in a chat with graphics (at least in composer), easy way to add pull quotes, graphics, charts, and diagrams to Substack, emails, teams chats, etc. 
