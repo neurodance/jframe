@@ -350,4 +350,14 @@ class ExtensibilityFramework {
 By combining best-in-class open source technologies with our unique principles of **conciseness** and **extensibility**, we create a blue ocean opportunity in the interactive content space. Our dual approach—open source infrastructure (JFrame) and commercial creative platform (Jottr.io)—ensures both ecosystem growth and revenue generation while respecting and leveraging our complex stakeholder relationships.
 
 ## Addenda
-1. Utilize visual amplification: graphics, design, images, video, drawings, "infographics on the fly", sequenced rendering for carousel or slider, multiple card frame layouts for heroes, lists, grids, etc., plug-in frame combinations for dashboards, D3 & mermaid support, AI + manual editing in a chat with graphics (at least in composer), easy way to add pull quotes, graphics, charts, and diagrams to Substack, emails, teams chats, etc. 
+1. Utilize visual amplification: graphics, design, images, video, drawings, "infographics on the fly", sequenced rendering for carousel or slider, multiple card frame layouts for heroes, lists, grids, etc., plug-in frame combinations for dashboards, D3 & mermaid support, AI + manual editing in a chat with graphics (at least in composer), easy way to add pull quotes, graphics, charts, and diagrams to Substack, emails, teams chats, etc.
+2. We must adapt and build on the existing open source "Designer", informed by the improvements Microsoft has made and included in their online version of the Adaptive Cards Designer (which don't appear to be available in GH), to create a modern, dynamic visual editor that provides arrays/lists of context-driven options, including images, interactions, user input, etc. that continually update as the jott evolves. These options can easily be inserted or replace current contents, resulting in a fluid, creative, and synchronistic, serendipitous flow. An important underlying concept is that the generative AI incorporated into the new designer is optimized for the Jott medium, prioritizing the top requirements for effective Jotts and Jotting. It should probably have 2 different basic UI layouts, corresponding to 2 different Jott development modes: (1) no-code, for most users (2) pro-code, for advanced users.
+3. We must incorporate and leverage the multi-agent AI capabilites of Integraph.ai (my project in repo:Neurodance/Integraph) to ensure optimal utilization of AI for Jott creation and Jframe capabilities.
+4. All the following elements must also be incorporated into the strategic development plan and the backlog:
+•	Dynamic frame orchestration
+•	Multiple animated frames and Jotts
+•	Context aware layout
+•	Frame templates
+•	Frame contacts
+•	Multiple layers (like in Photoshop)
+5. Must create a rich system that incorporates Figma and Tailwind, with the goal of easy deployment in many different kinds of environments.
