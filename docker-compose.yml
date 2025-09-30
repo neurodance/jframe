@@ -1,0 +1,20 @@
+version: "3.9"
+services:
+  jframe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jframe-local:latest
+    container_name: jframe
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      # Mount the parent repos folder to preserve sibling paths like ../chrome-devtools-mcp
+      - ../..:/workspaces:cached
+      # Keep node_modules inside container to avoid host permission issues
+      - /workspaces/jframe/node_modules
+    working_dir: /workspaces/jframe
+    command: sh -lc "if npm run | grep -q 'dev'; then npm run dev; elif npm run | grep -q 'serve'; then npm run serve; else npx serve . -l 3000; fi"
