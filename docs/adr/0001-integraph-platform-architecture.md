@@ -117,7 +117,7 @@ For each cell, we’ll set throughput targets (QPS, storage, concurrent jobs), S
 
 ## Open Questions
 
-- Exact regions to launch first; specific residency constraints per customer segment.
+- Default launch regions: Azure East US and West Europe. Additional regions will be added per-customer residency requirements; artifacts and assets will respect region affinity and replication policies. Cloudflare will provide global CDN/WAF acceleration in front of regional Azure deployments; Azure Front Door may be used for regional routing where appropriate.
 - Connector priorities for Logic Apps and third-party MCP servers.
 - Initial work-product templates beyond Jotts to seed the marketplace.
 
