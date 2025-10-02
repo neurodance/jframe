@@ -1,0 +1,743 @@
+openapi: 3.1.0
+info:
+  title: Integraph API
+  version: 1.0.0-draft
+  description: |
+    API-first contract for Integraph. Versioned under /v1. JSON Schema dialect is 2020-12.
+    Security via OIDC Bearer tokens (users) and HMAC API keys (server-to-server). All requests and responses include/propagate correlation IDs.
+  contact:
+    name: Integraph Team
+    url: https://example.com
+    email: support@example.com
+servers:
+  - url: https://api.integraph.example.com/v1
+    description: Production
+  - url: https://staging.api.integraph.example.com/v1
+    description: Staging
+  - url: http://localhost:8080/v1
+    description: Local
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+tags:
+  - name: Auth
+  - name: Orgs
+  - name: Users
+  - name: Projects
+  - name: WorkProducts
+  - name: Templates
+  - name: JobsRuns
+  - name: Assets
+  - name: Webhooks
+  - name: Events
+  - name: Utility
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+paths:
+  /auth/token:
+    post:
+      tags: [Auth]
+      summary: Exchange OIDC code for token (optional)
+      description: Optional helper for exchanging OIDC code for JWT. In most enterprise scenarios, use your IdP directly.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+      responses:
+        '200':
+          description: Token issued
+          headers:
+            X-Correlation-Id:
+              $ref: '#/components/headers/CorrelationId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /orgs:
+    get:
+      tags: [Orgs]
+      summary: List organizations
+      parameters:
+        - $ref: '#/components/parameters/PageAfter'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgList'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Orgs]
+      summary: Create organization
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrgCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Org'
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /orgs/{orgId}/api-keys:
+    get:
+      tags: [Orgs]
+      summary: List API keys for an org
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/ApiKey' }
+    post:
+      tags: [Orgs]
+      summary: Create API key
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKey' }
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Correlation-Id: { $ref: '#/components/headers/CorrelationId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /orgs/{orgId}/projects:
+    get:
+      tags: [Projects]
+      summary: List projects
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/PageAfter'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectList' }
+    post:
+      tags: [Projects]
+      summary: Create project
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Project' }
+
+  /projects/{projectId}/work-products:
+    get:
+      tags: [WorkProducts]
+      summary: List work products
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/PageAfter'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WorkProductList' }
+    post:
+      tags: [WorkProducts]
+      summary: Create work product (metadata)
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WorkProductCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WorkProduct' }
+
+  /templates:
+    get:
+      tags: [Templates]
+      summary: List templates
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TemplateList' }
+    post:
+      tags: [Templates]
+      summary: Create template
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TemplateCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Template' }
+
+  /templates/{templateId}/render:
+    post:
+      tags: [Templates]
+      summary: Render a template into a work product
+      parameters:
+        - $ref: '#/components/parameters/TemplateId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TemplateRenderRequest' }
+      responses:
+        '202':
+          description: Accepted, job created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+
+  /work-products/{workProductId}/jobs:
+    post:
+      tags: [JobsRuns]
+      summary: Start a job for a work product (generate|continue|review|transform|validate)
+      parameters:
+        - $ref: '#/components/parameters/WorkProductId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JobCreate' }
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+
+  /jobs/{jobId}:
+    get:
+      tags: [JobsRuns]
+      summary: Get job
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+
+  /jobs/{jobId}/runs:
+    get:
+      tags: [JobsRuns]
+      summary: List runs for a job
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Run' }
+
+  /runs/{runId}:
+    get:
+      tags: [JobsRuns]
+      summary: Get run
+      parameters:
+        - $ref: '#/components/parameters/RunId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Run' }
+
+  /assets:
+    post:
+      tags: [Assets]
+      summary: Create asset (signed URL or direct upload)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssetCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Asset' }
+
+  /assets/{assetId}:
+    get:
+      tags: [Assets]
+      summary: Get asset metadata
+      parameters:
+        - $ref: '#/components/parameters/AssetId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Asset' }
+
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      summary: List webhooks
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Webhook' }
+    post:
+      tags: [Webhooks]
+      summary: Create webhook endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Webhook' }
+
+  /webhooks/test:
+    post:
+      tags: [Webhooks]
+      summary: Send test delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookTest' }
+      responses:
+        '202':
+          description: Accepted
+
+  /events:
+    get:
+      tags: [Events]
+      summary: List recent events (polling)
+      parameters:
+        - name: since
+          in: query
+          required: false
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Event' }
+
+  /events/stream:
+    get:
+      tags: [Events]
+      summary: Stream events (SSE)
+      responses:
+        '200':
+          description: text/event-stream
+
+  /health:
+    get:
+      tags: [Utility]
+      summary: Health check
+      responses:
+        '200': { description: OK }
+
+  /version:
+    get:
+      tags: [Utility]
+      summary: Version
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  headers:
+    CorrelationId:
+      description: Correlation ID propagated end-to-end
+      schema: { type: string }
+  parameters:
+    OrgId:
+      name: orgId
+      in: path
+      required: true
+      schema: { type: string }
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: string }
+    WorkProductId:
+      name: workProductId
+      in: path
+      required: true
+      schema: { type: string }
+    TemplateId:
+      name: templateId
+      in: path
+      required: true
+      schema: { type: string }
+    AssetId:
+      name: assetId
+      in: path
+      required: true
+      schema: { type: string }
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema: { type: string }
+    RunId:
+      name: runId
+      in: path
+      required: true
+      schema: { type: string }
+    PageAfter:
+      name: page[after]
+      in: query
+      required: false
+      schema: { type: string }
+    PageSize:
+      name: page[size]
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema: { type: string }
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Too many requests
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string }
+
+    TokenRequest:
+      type: object
+      properties:
+        code: { type: string }
+        redirectUri: { type: string, format: uri }
+    TokenResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, enum: [Bearer] }
+        expires_in: { type: integer }
+
+    Org:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        region: { type: string }
+        createdAt: { type: string, format: date-time }
+    OrgCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        region: { type: string }
+    OrgList:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Org' }
+        next: { type: string, nullable: true, description: Cursor for next page }
+
+    ApiKey:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        prefix: { type: string }
+        createdAt: { type: string, format: date-time }
+        lastEight: { type: string }
+        secret: { type: string, writeOnly: true }
+    ApiKeyCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        name: { type: string }
+
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        orgId: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+    ProjectCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+    ProjectList:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Project' }
+        next: { type: string, nullable: true }
+
+    WorkProduct:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        type: { type: string }
+        title: { type: string }
+        status: { type: string, enum: ['draft','active','archived'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        latestRunId: { type: string, nullable: true }
+    WorkProductCreate:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        metadata: { type: object, additionalProperties: true }
+    WorkProductList:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/WorkProduct' }
+        next: { type: string, nullable: true }
+
+    Template:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        kind: { type: string }
+        version: { type: string }
+        schema: { type: object }
+    TemplateCreate:
+      type: object
+      required: [name, kind]
+      properties:
+        name: { type: string }
+        kind: { type: string }
+        version: { type: string }
+        schema: { type: object }
+    TemplateList:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Template' }
+
+    TemplateRenderRequest:
+      type: object
+      properties:
+        inputs: { type: object, additionalProperties: true }
+
+    Job:
+      type: object
+      properties:
+        id: { type: string }
+        workProductId: { type: string }
+        type: { type: string, enum: ['generate','continue','review','transform','validate'] }
+        status: { type: string, enum: ['queued','running','succeeded','failed','canceled'] }
+        createdAt: { type: string, format: date-time }
+        lastRunId: { type: string, nullable: true }
+    JobCreate:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: ['generate','continue','review','transform','validate'] }
+        params: { type: object, additionalProperties: true }
+
+    Run:
+      type: object
+      properties:
+        id: { type: string }
+        jobId: { type: string }
+        status: { type: string, enum: ['running','succeeded','failed'] }
+        startedAt: { type: string, format: date-time }
+        endedAt: { type: string, format: date-time, nullable: true }
+        correlationId: { type: string }
+        output: { type: object, additionalProperties: true }
+
+    Asset:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        url: { type: string, format: uri }
+        size: { type: integer, minimum: 0 }
+        createdAt: { type: string, format: date-time }
+    AssetCreate:
+      type: object
+      properties:
+        type: { type: string }
+        size: { type: integer }
+        directUpload: { type: boolean, default: false }
+
+    Webhook:
+      type: object
+      properties:
+        id: { type: string }
+        url: { type: string, format: uri }
+        secret: { type: string, writeOnly: true }
+        events: { type: array, items: { type: string } }
+        active: { type: boolean }
+    WebhookCreate:
+      type: object
+      required: [url, events]
+      properties:
+        url: { type: string, format: uri }
+        secret: { type: string }
+        events: { type: array, items: { type: string } }
+    WebhookTest:
+      type: object
+      properties:
+        eventType: { type: string, default: 'job.succeeded' }
+
+    Event:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string, enum: ['job.started','job.succeeded','job.failed','run.started','run.succeeded','run.failed'] }
+        occurredAt: { type: string, format: date-time }
+        data: { type: object, additionalProperties: true }
