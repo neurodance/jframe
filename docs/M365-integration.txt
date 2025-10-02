@@ -1,0 +1,10 @@
+M365 app:
+	- Teams: need to define and build it
+	- SharePoint: create a webpart that supports creating, editing, and displaying a Jott
+	- for all M365: library of existing Jotts and Jott templates that can easily be deployed, parameterized to readily adapt to requirements
+	- For dev purposes, create a list of possible use cases and additional features/functionality to support them (e.g. training, IT support FAQ)
+	- easy integration with the Power Platform
+	- design and deploy commercialization processes, centered on value for users
+	- hooks for Copilot
+	
+	

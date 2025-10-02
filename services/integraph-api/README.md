@@ -17,6 +17,9 @@ The server listens on `http://localhost:8080`.
 - GET /v1/version
 - GET /v1/orgs
 - POST /v1/orgs
+- GET /v1/projects
+- POST /v1/projects
+- GET /v1/projects/:id
 - GET /v1/users/me
 - GET /v1/events/stream (SSE)
 - GET /v1/openapi (serves local OpenAPI YAML)
@@ -24,4 +27,4 @@ The server listens on `http://localhost:8080`.
 ## Notes
 - Correlation ID is propagated via `X-Correlation-Id`.
 - CORS is enabled permissively in dev.
-- Auth is currently stubbed; health/version/openapi are open, others will require OIDC/API keys later.
+- Auth is currently stubbed; health/version/openapi are open, others will require OIDC/API keys later. If `API_KEY` env var is set, all non-open routes require header `x-api-key: $API_KEY`.
