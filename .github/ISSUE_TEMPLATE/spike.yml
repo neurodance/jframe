@@ -1,0 +1,16 @@
+name: Spike
+description: Time-boxed research task
+labels: [spike]
+body:
+  - type: textarea
+    attributes:
+      label: Question / Hypothesis
+  - type: textarea
+    attributes:
+      label: Approach
+  - type: textarea
+    attributes:
+      label: Timebox
+  - type: textarea
+    attributes:
+      label: Findings / Next Steps

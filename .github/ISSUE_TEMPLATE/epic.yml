@@ -1,0 +1,19 @@
+name: Epic
+description: Track a large body of work across sprints
+labels: [epic]
+body:
+  - type: textarea
+    attributes:
+      label: Summary
+  - type: textarea
+    attributes:
+      label: Goals & Non-Goals
+  - type: textarea
+    attributes:
+      label: Acceptance Criteria
+  - type: textarea
+    attributes:
+      label: Milestones / Sprints
+  - type: textarea
+    attributes:
+      label: Links

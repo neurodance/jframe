@@ -1,0 +1,16 @@
+name: Bug
+description: Report a defect
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+  - type: textarea
+    attributes:
+      label: Repro Steps
+  - type: textarea
+    attributes:
+      label: Environment

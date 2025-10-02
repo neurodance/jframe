@@ -1,0 +1,13 @@
+name: Retro
+description: Sprint retrospective notes
+labels: [retro]
+body:
+  - type: textarea
+    attributes:
+      label: What went well
+  - type: textarea
+    attributes:
+      label: What didn’t go well
+  - type: textarea
+    attributes:
+      label: Actions

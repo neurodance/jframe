@@ -1,0 +1,16 @@
+name: Story
+description: A user story with clear acceptance criteria
+labels: [story]
+body:
+  - type: textarea
+    attributes:
+      label: As a [role], I want [capability] so that [benefit]
+  - type: textarea
+    attributes:
+      label: Acceptance Criteria (Given/When/Then)
+  - type: textarea
+    attributes:
+      label: Dependencies
+  - type: textarea
+    attributes:
+      label: Test Notes
