@@ -36,3 +36,19 @@ The server listens on `http://localhost:8080`.
 - CORS is enabled permissively in dev.
 - Auth is currently stubbed; health/version/openapi are open, others will require OIDC/API keys later. If `API_KEY` env var is set, all non-open routes require header `x-api-key: $API_KEY`.
 - SSE events: `heartbeat` every 15s, plus `job.created`, `run.created`, and `run.completed` when actions occur.
+
+## Environment
+
+- Copy `.env.example` to `.env` and set values.
+- For Prisma Accelerate (optional for now), set:
+
+```
+PRISMA_ACCELERATE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+DATABASE_URL="prisma+postgres://accelerate.prisma-data.net/?api_key=..."
+```
+
+- To protect non-open routes in dev:
+
+```
+API_KEY="devkey"
+```
